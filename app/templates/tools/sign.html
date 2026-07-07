@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Digital Signatures — NexerSuite{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-2">Digital Signatures</h1>
+    <p class="text-gray-500 text-sm mb-6">Sign documents digitally — uses 12 credits</p>
+    <form id="signForm" class="space-y-4">
+        <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Document Description</label>
+                <textarea name="text" rows="3" placeholder="Enter document text or description" required class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-purple-500"></textarea>
+            </div>
+            <div class="mt-4 grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Signer Name</label>
+                    <input type="text" name="signer_name" required class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-purple-500">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Date</label>
+                    <input type="date" name="date" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-purple-500">
+                </div>
+            </div>
+            <button type="submit" class="mt-4 w-full bg-purple-600 hover:bg-purple-500 text-white rounded-lg px-4 py-2.5 text-sm font-medium transition">Sign Document</button>
+        </div>
+    </form>
+</div>
+<script>
+document.getElementById('signForm').onsubmit = async (e) => {
+    e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]');
+    btn.textContent = 'Signing...'; btn.disabled = true;
+    const res = await fetch('/tools/document/sign', {method:'POST', body:new FormData(e.target)});
+    if (res.headers.get('content-type')?.includes('json')) {
+        const d = await res.json(); alert(d.error);
+    } else {
+        const blob = await res.blob();
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'signed_document.pdf'; a.click();
+    }
+    btn.textContent = 'Sign Document'; btn.disabled = false;
+};
+</script>
+{% endblock %}

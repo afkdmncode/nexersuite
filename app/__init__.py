@@ -19,7 +19,7 @@ def create_app(config_class=Config):
 
     db.init_app(app)
     login_manager.init_app(app)
-    login_manager.login_view = 'landing.index'
+    login_manager.login_view = 'auth.login'
 
     from app.services.logger import log_request, log_error, log_user_action, app_log
 
@@ -81,6 +81,8 @@ def create_app(config_class=Config):
     from app.routes.api import api_bp
     from app.routes.credits import credits_bp
     from app.routes.admin import admin_bp
+    from app.routes.auth import auth_bp
+    from app.routes.payments import payments_bp
 
     app.register_blueprint(landing_bp)
     app.register_blueprint(chat_bp, url_prefix='/chat')
@@ -88,6 +90,8 @@ def create_app(config_class=Config):
     app.register_blueprint(api_bp, url_prefix='/api/v1')
     app.register_blueprint(credits_bp, url_prefix='/credits')
     app.register_blueprint(admin_bp)
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+    app.register_blueprint(payments_bp, url_prefix='/payments')
 
     with app.app_context():
         from app import models

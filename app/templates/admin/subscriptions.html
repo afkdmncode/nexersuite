@@ -1,0 +1,46 @@
+{% extends "admin/base.html" %}
+{% block title %}Subscriptions{% endblock %}
+{% block content %}
+<div class="p-6">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold">Subscriptions</h1>
+        <p class="text-sm text-gray-500">{{ subscriptions|length }} active subscriptions</p>
+    </div>
+
+    <div class="bg-gray-900/50 border border-gray-800 rounded-2xl overflow-hidden">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-left text-gray-500 text-xs uppercase tracking-wider bg-gray-900/80">
+                    <th class="p-4">User ID</th>
+                    <th class="p-4">Plan</th>
+                    <th class="p-4">Status</th>
+                    <th class="p-4">Period Start</th>
+                    <th class="p-4">Period End</th>
+                    <th class="p-4">Stripe ID</th>
+                    <th class="p-4">Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in subscriptions %}
+                <tr class="border-t border-gray-800/50 hover:bg-gray-800/20">
+                    <td class="p-4">{{ s.user_id }}</td>
+                    <td class="p-4">{{ s.plan_id }}</td>
+                    <td class="p-4">
+                        <span class="inline-block text-xs px-2 py-1 rounded-full {% if s.status == 'active' %}bg-green-900/50 text-green-400{% elif s.status == 'past_due' %}bg-yellow-900/50 text-yellow-400{% else %}bg-red-900/50 text-red-400{% endif %}">
+                            {{ s.status }}
+                        </span>
+                    </td>
+                    <td class="p-4 text-xs text-gray-500">{{ s.current_period_start.strftime('%Y-%m-%d') if s.current_period_start else '—' }}</td>
+                    <td class="p-4 text-xs text-gray-500">{{ s.current_period_end.strftime('%Y-%m-%d') if s.current_period_end else '—' }}</td>
+                    <td class="p-4 text-xs font-mono text-gray-500">{{ s.stripe_subscription_id[:20] if s.stripe_subscription_id else '—' }}...</td>
+                    <td class="p-4 text-xs text-gray-500">{{ s.created_at.strftime('%Y-%m-%d') }}</td>
+                </tr>
+                {% endfor %}
+                {% if not subscriptions %}
+                <tr><td colspan="7" class="p-8 text-center text-gray-500">No subscriptions yet</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

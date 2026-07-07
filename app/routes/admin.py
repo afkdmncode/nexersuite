@@ -4,7 +4,7 @@ from functools import wraps
 from datetime import datetime, timedelta
 from flask import Blueprint, render_template, request, jsonify, session, redirect, url_for, current_app
 from app import db
-from app.models import IPPool, UsageLog, ToolCost, User, Payment, UserInteraction, ApiKey, OllamaInstance, AppConfig
+from app.models import IPPool, UsageLog, ToolCost, User, Payment, Subscription, PasswordReset, UserInteraction, ApiKey, OllamaInstance, AppConfig
 from app.services.credit_manager import get_client_ip, get_global_price_multiplier, get_tool_cost
 from app.services.logger import log_admin, get_recent_logs, get_log_stats, log_error
 from app.services.ollama_provider import test_connection, list_available_models
@@ -214,6 +214,84 @@ def interactions():
     return render_template('admin/interactions.html',
         records=records, action_types=[a[0] for a in action_types],
         action_filter=action_filter, ip_filter=ip_filter)
+
+
+# ── User Management ──
+
+@admin_bp.route('/users')
+@admin_required
+def users():
+    page = request.args.get('page', 1, type=int)
+    per_page = 50
+    query = User.query.order_by(User.created_at.desc())
+    users_list = query.paginate(page=page, per_page=per_page, error_out=False)
+    return render_template('admin/users.html', users=users_list)
+
+
+@admin_bp.route('/users/toggle-paid', methods=['POST'])
+@admin_required
+def toggle_user_paid():
+    user_id = request.form.get('user_id')
+    user = db.session.get(User, int(user_id))
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    user.is_paid = not user.is_paid
+    user.subscription_tier = 'pro' if user.is_paid else 'free'
+    db.session.commit()
+    log_admin('toggle_user_paid', request.remote_addr, {
+        'user': user.email, 'is_paid': user.is_paid
+    })
+    return jsonify({'success': True, 'is_paid': user.is_paid})
+
+
+@admin_bp.route('/users/add-credits', methods=['POST'])
+@admin_required
+def add_user_credits():
+    user_id = request.form.get('user_id')
+    amount = int(request.form.get('amount', 0))
+    user = db.session.get(User, int(user_id))
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    user.credit_bonus = (user.credit_bonus or 0) + amount
+    db.session.commit()
+    log_admin('add_user_credits', request.remote_addr, {
+        'user': user.email, 'amount': amount, 'total_bonus': user.credit_bonus
+    })
+    return jsonify({'success': True, 'credit_bonus': user.credit_bonus})
+
+
+@admin_bp.route('/users/delete', methods=['POST'])
+@admin_required
+def delete_user():
+    user_id = request.form.get('user_id')
+    user = db.session.get(User, int(user_id))
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    db.session.delete(user)
+    db.session.commit()
+    log_admin('delete_user', request.remote_addr, {'email': user.email})
+    return jsonify({'success': True})
+
+
+@admin_bp.route('/users/payments')
+@admin_required
+def user_payments():
+    page = request.args.get('page', 1, type=int)
+    per_page = 50
+    payments = Payment.query.order_by(Payment.created_at.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+    return render_template('admin/payments.html', payments=payments)
+
+
+@admin_bp.route('/users/subscriptions')
+@admin_required
+def subscriptions():
+    subs = Subscription.query.order_by(Subscription.created_at.desc()).all()
+    return render_template('admin/subscriptions.html', subscriptions=subs)
 
 
 # ── API Keys ──

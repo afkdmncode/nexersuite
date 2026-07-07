@@ -131,17 +131,39 @@ class AppConfig(db.Model):
         db.session.commit()
 
 
+class PasswordReset(db.Model):
+    __tablename__ = 'password_reset'
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), nullable=False)
+    token = db.Column(db.String(128), unique=True, nullable=False)
+    used = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class User(UserMixin, db.Model):
     __tablename__ = 'user'
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True)
+    username = db.Column(db.String(60), unique=True)
     password_hash = db.Column(db.String(256))
     is_paid = db.Column(db.Boolean, default=False)
     subscription_tier = db.Column(db.String(20), default='free')
+    stripe_customer_id = db.Column(db.String(128))
     api_key = db.Column(db.String(64), unique=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     credit_bonus = db.Column(db.Integer, default=0)
+
+    def set_password(self, password):
+        import bcrypt
+        self.password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+    def check_password(self, password):
+        import bcrypt
+        if not self.password_hash:
+            return False
+        return bcrypt.checkpw(password.encode(), self.password_hash.encode())
 
 
 class Payment(db.Model):
@@ -150,8 +172,23 @@ class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     amount = db.Column(db.Float)
+    currency = db.Column(db.String(3), default='usd')
     stripe_session_id = db.Column(db.String(128))
+    stripe_subscription_id = db.Column(db.String(128))
     status = db.Column(db.String(20))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class Subscription(db.Model):
+    __tablename__ = 'subscription'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    stripe_subscription_id = db.Column(db.String(128))
+    plan_id = db.Column(db.String(50))
+    status = db.Column(db.String(20), default='active')
+    current_period_start = db.Column(db.DateTime)
+    current_period_end = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 

@@ -10,6 +10,15 @@
 
     {% set cat_names = {'document': 'Document', 'image': 'Image & Vision', 'audio': 'Audio', 'video': 'Video', 'development': 'Development', 'forms': 'Forms & Templates'} %}
     {% set cat_colors = {'document': 'purple', 'image': 'pink', 'audio': 'cyan', 'video': 'red', 'development': 'green', 'forms': 'amber'} %}
+    {% set tool_routes = {
+        'document-convert': '/tools/document/convert', 'document-translate': '/tools/document/translate',
+        'document-sign': '/tools/document/sign', 'transcribe': '/tools/audio/transcribe',
+        'video-transcribe': '/tools/video/transcribe', 'video-analyze': '/tools/video/analyze',
+        'detect': '/tools/image/detect', 'segment': '/tools/image/segment',
+        'pose': '/tools/image/pose', 'code-gen': '/tools/code/generate',
+        'code-exec': '/tools/code/execute', 'form-build': '/tools/forms/build',
+        'resume-build': '/tools/forms/resume',
+    } %}
 
     {% for category, tool_list in categories.items() %}
     {% if tool_list %}
@@ -20,7 +29,7 @@
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {% for tool in tool_list %}
-            <a href="/tools/{{ tool.slug }}" class="group bg-gray-900/50 border border-gray-800 rounded-xl p-5 hover:border-{{ cat_colors[category] }}-500/50 hover:bg-gray-900 transition-all">
+            <a href="{{ tool_routes.get(tool.slug, '/tools/' + tool.slug) }}" class="group bg-gray-900/50 border border-gray-800 rounded-xl p-5 hover:border-{{ cat_colors[category] }}-500/50 hover:bg-gray-900 transition-all">
                 <h3 class="font-medium mb-1">{{ tool.name }}</h3>
                 <p class="text-xs text-gray-500 mb-3">{{ tool.description }}</p>
                 <span class="text-xs text-gray-600">{{ tool.credit_cost }} credits</span>

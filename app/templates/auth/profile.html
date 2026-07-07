@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}My Profile — NexerSuite{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6">My Account</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-2 space-y-6">
+            <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+                <h2 class="font-semibold mb-4">Profile</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Username</label>
+                        <p class="text-sm">{{ current_user.username or 'Not set' }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Email</label>
+                        <p class="text-sm">{{ current_user.email }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Account Type</label>
+                        <span class="inline-block text-xs px-2 py-1 rounded-full {% if current_user.is_paid %}bg-green-900/50 text-green-400 border border-green-800{% else %}bg-gray-800 text-gray-400 border border-gray-700{% endif %}">
+                            {{ 'Pro' if current_user.is_paid else 'Free' }}
+                        </span>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">API Key</label>
+                        <div class="flex items-center space-x-2">
+                            <code class="text-xs bg-gray-800 px-3 py-1.5 rounded-lg font-mono">{{ current_user.api_key[:16] }}...</code>
+                            <button onclick="regenerateKey()" class="text-xs text-purple-400 hover:text-purple-300 transition">Regenerate</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Credit Bonus</label>
+                        <p class="text-sm">{{ current_user.credit_bonus or 0 }} bonus credits</p>
+                    </div>
+                </div>
+            </div>
+
+            {% if subscription %}
+            <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+                <h2 class="font-semibold mb-4">Subscription</h2>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between"><span class="text-gray-400">Plan</span><span>{{ subscription.plan_id }}</span></div>
+                    <div class="flex justify-between"><span class="text-gray-400">Status</span><span class="text-green-400">{{ subscription.status }}</span></div>
+                    <div class="flex justify-between"><span class="text-gray-400">Period</span><span>{{ subscription.current_period_start.strftime('%b %d, %Y') }} - {{ subscription.current_period_end.strftime('%b %d, %Y') }}</span></div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if api_keys %}
+            <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+                <h2 class="font-semibold mb-4">API Keys</h2>
+                <div class="space-y-3">
+                    {% for key in api_keys %}
+                    <div class="flex items-center justify-between py-2 border-b border-gray-800/50 last:border-0">
+                        <div>
+                            <p class="text-sm">{{ key.name }}</p>
+                            <code class="text-xs text-gray-500 font-mono">{{ key.key[:20] }}...</code>
+                        </div>
+                        <span class="text-xs {% if key.is_active %}text-green-400{% else %}text-red-400{% endif %}">{{ 'Active' if key.is_active else 'Inactive' }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if payments %}
+            <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+                <h2 class="font-semibold mb-4">Payment History</h2>
+                <div class="space-y-2 text-sm">
+                    {% for p in payments %}
+                    <div class="flex justify-between py-2 border-b border-gray-800/50 last:border-0">
+                        <span>{{ p.created_at.strftime('%b %d, %Y') }}</span>
+                        <span>${{ '%.2f'|format(p.amount) }}</span>
+                        <span class="{% if p.status == 'completed' %}text-green-400{% else %}text-yellow-400{% endif %}">{{ p.status }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if not current_user.is_paid %}
+            <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+                <h2 class="font-semibold mb-4">Upgrade to Pro</h2>
+                <p class="text-sm text-gray-400 mb-4">Get unlimited access to all tools, priority support, and more.</p>
+                <div class="flex space-x-3">
+                    <a href="/payments/checkout/monthly" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition">$9.99/mo</a>
+                    <a href="/payments/checkout/yearly" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium border border-gray-700 transition">$79.99/yr</a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+                <h2 class="font-semibold mb-4">Quick Links</h2>
+                <div class="space-y-2 text-sm">
+                    <a href="/credits" class="block text-gray-400 hover:text-white transition py-1">View Credits</a>
+                    <a href="/tools" class="block text-gray-400 hover:text-white transition py-1">All Tools</a>
+                    <a href="/api/v1/" class="block text-gray-400 hover:text-white transition py-1">API Docs</a>
+                    <a href="/auth/logout" class="block text-red-400 hover:text-red-300 transition py-1">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function regenerateKey() {
+    if (!confirm('Regenerate your API key? The old key will stop working.')) return;
+    fetch('/auth/profile/api-key/regenerate', { method: 'POST' })
+        .then(r => r.json())
+        .then(d => { if(d.success) location.reload(); });
+}
+</script>
+{% endblock %}

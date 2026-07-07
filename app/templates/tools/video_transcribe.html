@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Video Transcription — NexerSuite{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-2">Video Transcription</h1>
+    <p class="text-gray-500 text-sm mb-6">Extract audio from video and transcribe to text — uses 20 credits</p>
+    <form id="transcribeForm" enctype="multipart/form-data" class="space-y-4">
+        <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Upload Video</label>
+                <input type="file" name="file" accept="video/*" required class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700">
+            </div>
+            <button type="submit" class="mt-4 w-full bg-purple-600 hover:bg-purple-500 text-white rounded-lg px-4 py-2.5 text-sm font-medium transition">Transcribe</button>
+        </div>
+    </form>
+    <div id="result" class="mt-4 hidden">
+        <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+            <h3 class="text-sm font-medium mb-2">Transcription</h3>
+            <p id="transcriptText" class="text-sm text-gray-300 whitespace-pre-wrap"></p>
+            <p id="creditsInfo" class="text-xs text-gray-500 mt-2"></p>
+        </div>
+    </div>
+</div>
+<script>
+document.getElementById('transcribeForm').onsubmit = async (e) => {
+    e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]');
+    btn.textContent = 'Processing...'; btn.disabled = true;
+    const res = await fetch('/tools/video/transcribe', {method:'POST', body:new FormData(e.target)});
+    const d = await res.json();
+    if (d.text) {
+        document.getElementById('transcriptText').textContent = d.text;
+        document.getElementById('creditsInfo').textContent = `Credits remaining: ${d.credits_remaining}`;
+        document.getElementById('result').classList.remove('hidden');
+    } else { alert(d.error); }
+    btn.textContent = 'Transcribe'; btn.disabled = false;
+};
+</script>
+{% endblock %}

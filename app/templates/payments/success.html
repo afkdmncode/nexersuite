@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Payment Successful — NexerSuite{% endblock %}
+{% block content %}
+<div class="min-h-[70vh] flex items-center justify-center px-4">
+    <div class="text-center max-w-sm">
+        <div class="w-16 h-16 bg-green-900/30 border border-green-800 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        </div>
+        <h1 class="text-2xl font-bold mb-2">Payment Successful!</h1>
+        <p class="text-gray-500 text-sm mb-8">Your account has been upgraded to Pro. You now have unlimited access to all tools.</p>
+        <a href="/auth/profile" class="inline-block bg-purple-600 hover:bg-purple-500 text-white rounded-lg px-6 py-2.5 text-sm font-medium transition">Go to Profile</a>
+    </div>
+</div>
+{% endblock %}

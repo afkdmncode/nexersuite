@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Login — NexerSuite{% endblock %}
+{% block content %}
+<div class="min-h-[70vh] flex items-center justify-center px-4">
+    <div class="w-full max-w-sm">
+        <h1 class="text-2xl font-bold text-center mb-2">Welcome Back</h1>
+        <p class="text-gray-500 text-sm text-center mb-8">Sign in to your NexerSuite account</p>
+        <form method="POST" class="space-y-4">
+            {% if error %}
+            <div class="bg-red-900/30 border border-red-800 text-red-400 text-sm rounded-lg p-3">{{ error }}</div>
+            {% endif %}
+            <div>
+                <label class="block text-sm text-gray-400 mb-1">Email</label>
+                <input type="email" name="email" required class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-purple-500">
+            </div>
+            <div>
+                <label class="block text-sm text-gray-400 mb-1">Password</label>
+                <input type="password" name="password" required class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-purple-500">
+            </div>
+            <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 text-white rounded-lg px-4 py-2.5 text-sm font-medium transition">Sign In</button>
+        </form>
+        <div class="mt-6 text-center text-sm text-gray-500">
+            <a href="/auth/reset-password" class="hover:text-gray-300 transition">Forgot password?</a>
+            <span class="mx-2">·</span>
+            <a href="/auth/register" class="hover:text-gray-300 transition">Create account</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

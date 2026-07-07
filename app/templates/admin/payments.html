@@ -1,0 +1,44 @@
+{% extends "admin/base.html" %}
+{% block title %}Payments{% endblock %}
+{% block content %}
+<div class="p-6">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold">Payments</h1>
+        <p class="text-sm text-gray-500">{{ payments.total }} transactions</p>
+    </div>
+
+    <div class="bg-gray-900/50 border border-gray-800 rounded-2xl overflow-hidden">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-left text-gray-500 text-xs uppercase tracking-wider bg-gray-900/80">
+                    <th class="p-4">ID</th>
+                    <th class="p-4">User</th>
+                    <th class="p-4">Amount</th>
+                    <th class="p-4">Status</th>
+                    <th class="p-4">Stripe Session</th>
+                    <th class="p-4">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in payments.items %}
+                <tr class="border-t border-gray-800/50 hover:bg-gray-800/20">
+                    <td class="p-4 text-xs font-mono">{{ p.id }}</td>
+                    <td class="p-4">{{ p.user_id }}</td>
+                    <td class="p-4">${{ '%.2f'|format(p.amount) }}</td>
+                    <td class="p-4">
+                        <span class="inline-block text-xs px-2 py-1 rounded-full {% if p.status == 'completed' %}bg-green-900/50 text-green-400 border border-green-800{% elif p.status == 'pending' %}bg-yellow-900/50 text-yellow-400 border border-yellow-800{% else %}bg-red-900/50 text-red-400 border border-red-800{% endif %}">
+                            {{ p.status }}
+                        </span>
+                    </td>
+                    <td class="p-4 text-xs font-mono text-gray-500">{{ p.stripe_session_id[:20] }}...</td>
+                    <td class="p-4 text-xs text-gray-500">{{ p.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                </tr>
+                {% endfor %}
+                {% if not payments.items %}
+                <tr><td colspan="6" class="p-8 text-center text-gray-500">No payments yet</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

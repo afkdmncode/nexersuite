@@ -27,6 +27,20 @@
                     <a href="/credits" class="text-xs text-gray-500 border border-gray-700 px-3 py-1.5 rounded-full hover:border-gray-500 transition">
                         <span id="nav-credits">--</span> credits
                     </a>
+                    {% if current_user and current_user.is_authenticated %}
+                    <div class="relative group">
+                        <button class="text-xs text-gray-400 border border-gray-700 px-3 py-1.5 rounded-full hover:border-gray-500 transition">
+                            {{ current_user.username or current_user.email[:15] }}
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-800 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                            <a href="/auth/profile" class="block px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-t-xl">Profile</a>
+                            <a href="/auth/logout" class="block px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-b-xl">Logout</a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <a href="/auth/login" class="text-xs text-gray-400 border border-gray-700 px-3 py-1.5 rounded-full hover:border-gray-500 transition">Login</a>
+                    <a href="/auth/register" class="text-xs bg-purple-600 text-white px-3 py-1.5 rounded-full hover:bg-purple-500 transition">Sign Up</a>
+                    {% endif %}
                 </div>
             </div>
         </div>

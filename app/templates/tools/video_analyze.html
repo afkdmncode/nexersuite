@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Video Analysis — NexerSuite{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-2">Video Analysis</h1>
+    <p class="text-gray-500 text-sm mb-6">Analyze video content with AI — uses 25 credits</p>
+    <form id="analyzeForm" class="space-y-4">
+        <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Video URL</label>
+                <input type="url" name="url" placeholder="https://example.com/video.mp4" required class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-purple-500">
+            </div>
+            <div class="mt-4">
+                <label class="block text-sm text-gray-400 mb-2">Question / Context</label>
+                <input type="text" name="question" value="Analyze this video content" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-purple-500">
+            </div>
+            <button type="submit" class="mt-4 w-full bg-purple-600 hover:bg-purple-500 text-white rounded-lg px-4 py-2.5 text-sm font-medium transition">Analyze</button>
+        </div>
+    </form>
+    <div id="result" class="mt-4 hidden">
+        <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+            <h3 class="text-sm font-medium mb-2">Analysis</h3>
+            <p id="analysisText" class="text-sm text-gray-300 whitespace-pre-wrap"></p>
+            <p id="creditsInfo" class="text-xs text-gray-500 mt-2"></p>
+        </div>
+    </div>
+</div>
+<script>
+document.getElementById('analyzeForm').onsubmit = async (e) => {
+    e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]');
+    btn.textContent = 'Analyzing...'; btn.disabled = true;
+    const data = Object.fromEntries(new FormData(e.target));
+    const res = await fetch('/tools/video/analyze', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+    const d = await res.json();
+    if (d.analysis) {
+        document.getElementById('analysisText').textContent = d.analysis;
+        document.getElementById('creditsInfo').textContent = `Credits remaining: ${d.credits_remaining}`;
+        document.getElementById('result').classList.remove('hidden');
+    } else { alert(d.error); }
+    btn.textContent = 'Analyze'; btn.disabled = false;
+};
+</script>
+{% endblock %}
