@@ -1,7 +1,7 @@
 import os
 import time
 import secrets
-from flask import Flask, request, g, session
+from flask import Flask, request, g, session, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from app.config import Config
@@ -68,12 +68,12 @@ def create_app(config_class=Config):
     @app.errorhandler(404)
     def not_found(e):
         log_error(f'404: {request.path}', ip=g.get('ip', 'unknown'), path=request.path)
-        return {'error': 'Not found'}, 404
+        return render_template('errors/404.html'), 404
 
     @app.errorhandler(500)
     def server_error(e):
         log_error(f'500: {request.path}', ip=g.get('ip', 'unknown'), path=request.path)
-        return {'error': 'Internal server error'}, 500
+        return render_template('errors/500.html'), 500
 
     from app.routes.landing import landing_bp
     from app.routes.chat import chat_bp

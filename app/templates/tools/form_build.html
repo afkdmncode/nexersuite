@@ -1,48 +1,110 @@
 {% extends "base.html" %}
 {% block title %}Form Builder — NexerSuite{% endblock %}
 {% block content %}
-<div class="max-w-2xl mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold mb-2">Form Builder</h1>
-    <p class="text-gray-500 text-sm mb-6">Build custom HTML forms with AI — uses 12 credits</p>
-    <form id="formBuilder" class="space-y-4">
-        <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold">Form Builder</h1>
+        <p class="text-sm text-gray-500">Build custom HTML forms with AI. <span class="text-purple-400">12 credits</span></p>
+    </div>
+
+    <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+        <div class="space-y-4">
             <div>
                 <label class="block text-sm text-gray-400 mb-2">Form Title</label>
-                <input type="text" name="title" value="Contact Form" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-purple-500">
+                <input type="text" id="title-input" value="Contact Form" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-purple-500">
             </div>
-            <div class="mt-4">
+            <div>
                 <label class="block text-sm text-gray-400 mb-2">Fields (JSON array)</label>
-                <textarea name="fields" rows="4" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm font-mono focus:outline-none focus:border-purple-500">[{"type":"text","label":"Name","required":true},{"type":"email","label":"Email","required":true},{"type":"textarea","label":"Message","required":true}]</textarea>
+                <textarea id="fields-input" rows="4" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm font-mono focus:outline-none focus:border-purple-500">[{"type":"text","label":"Name","required":true},{"type":"email","label":"Email","required":true},{"type":"textarea","label":"Message","required":true}]</textarea>
             </div>
-            <button type="submit" class="mt-4 w-full bg-purple-600 hover:bg-purple-500 text-white rounded-lg px-4 py-2.5 text-sm font-medium transition">Generate Form</button>
+            <button id="submit-btn" class="w-full bg-gradient-to-r from-purple-600 to-cyan-500 rounded-xl px-6 py-3 text-sm font-medium hover:opacity-90 transition">Generate Form</button>
         </div>
-    </form>
-    <div id="result" class="mt-4 hidden">
-        <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
-            <h3 class="text-sm font-medium mb-2">Generated HTML</h3>
-            <pre id="htmlOutput" class="text-sm text-gray-300 bg-gray-950 rounded-lg p-4 overflow-x-auto"></pre>
-            <button onclick="copyHtml()" class="mt-3 text-xs text-purple-400 hover:text-purple-300 transition">Copy HTML</button>
-            <p id="creditsInfo" class="text-xs text-gray-500 mt-2"></p>
+
+        <div id="result" class="mt-4 hidden">
+            <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-medium">Generated HTML</h3>
+                    <button id="copy-btn" class="text-xs text-purple-400 hover:text-purple-300 transition">Copy HTML</button>
+                </div>
+                <pre id="output-text" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm text-gray-300 whitespace-pre-wrap max-h-96 overflow-y-auto font-mono"></pre>
+                <p id="credits-info" class="text-xs text-gray-500 mt-2"></p>
+            </div>
         </div>
+
+        <div id="loading" class="mt-4 text-center hidden">
+            <div class="animate-spin w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+            <p class="text-sm text-gray-500">Generating form...</p>
+        </div>
+
+        <div id="error" class="mt-4 text-center text-red-400 text-sm hidden"></div>
     </div>
 </div>
+{% endblock %}
+{% block scripts %}
 <script>
-document.getElementById('formBuilder').onsubmit = async (e) => {
-    e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]');
-    btn.textContent = 'Generating...'; btn.disabled = true;
-    const data = Object.fromEntries(new FormData(e.target));
-    try { data.fields = JSON.parse(data.fields); } catch(e) { alert('Invalid JSON in fields'); btn.textContent = 'Generate Form'; btn.disabled = false; return; }
-    const res = await fetch('/tools/forms/build', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
-    const d = await res.json();
-    if (d.html) {
-        document.getElementById('htmlOutput').textContent = d.html;
-        document.getElementById('creditsInfo').textContent = `Credits remaining: ${d.credits_remaining}`;
-        document.getElementById('result').classList.remove('hidden');
-    } else { alert(d.error); }
-    btn.textContent = 'Generate Form'; btn.disabled = false;
-};
-function copyHtml() {
-    navigator.clipboard.writeText(document.getElementById('htmlOutput').textContent);
-}
+document.addEventListener('DOMContentLoaded', () => {
+    const titleInput = document.getElementById('title-input');
+    const fieldsInput = document.getElementById('fields-input');
+    const submitBtn = document.getElementById('submit-btn');
+    const result = document.getElementById('result');
+    const outputText = document.getElementById('output-text');
+    const loading = document.getElementById('loading');
+    const error = document.getElementById('error');
+    const copyBtn = document.getElementById('copy-btn');
+    const creditsInfo = document.getElementById('credits-info');
+
+    submitBtn.addEventListener('click', async () => {
+        let fields;
+        try { fields = JSON.parse(fieldsInput.value); }
+        catch (e) {
+            error.textContent = 'Invalid JSON in fields. Please check the format.';
+            error.classList.remove('hidden');
+            return;
+        }
+
+        result.classList.add('hidden');
+        error.classList.add('hidden');
+        loading.classList.remove('hidden');
+        submitBtn.disabled = true;
+
+        try {
+            const res = await fetch('/tools/forms/build', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: titleInput.value, fields })
+            });
+            const data = await res.json();
+            loading.classList.add('hidden');
+            submitBtn.disabled = false;
+
+            if (res.status === 402) {
+                error.textContent = data.message || 'Insufficient credits.';
+                error.classList.remove('hidden');
+                return;
+            }
+            if (data.error) {
+                error.textContent = data.error;
+                error.classList.remove('hidden');
+                return;
+            }
+            outputText.textContent = data.html || data.text || '(No output)';
+            creditsInfo.textContent = `Credits remaining: ${data.credits_remaining}`;
+            result.classList.remove('hidden');
+            updateCredits(data.credits_remaining);
+        } catch (e) {
+            loading.classList.add('hidden');
+            submitBtn.disabled = false;
+            error.textContent = 'Error generating form.';
+            error.classList.remove('hidden');
+        }
+    });
+
+    copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(outputText.textContent).then(() => {
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => { copyBtn.textContent = 'Copy HTML'; }, 2000);
+        });
+    });
+});
 </script>
 {% endblock %}

@@ -1,38 +1,91 @@
 {% extends "base.html" %}
 {% block title %}Object Detection — NexerSuite{% endblock %}
 {% block content %}
-<div class="max-w-2xl mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold mb-2">Object Detection</h1>
-    <p class="text-gray-500 text-sm mb-6">Detect objects in images using AI — uses 15 credits</p>
-    <form id="detectForm" enctype="multipart/form-data" class="space-y-4">
-        <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
-            <div>
-                <label class="block text-sm text-gray-400 mb-2">Upload Image</label>
-                <input type="file" name="file" accept="image/*" required class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700">
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold">Object Detection</h1>
+        <p class="text-sm text-gray-500">Detect objects in images using AI. <span class="text-purple-400">15 credits</span></p>
+    </div>
+
+    <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+        <div class="border-2 border-dashed border-gray-700 rounded-xl p-8 text-center hover:border-purple-500/50 transition cursor-pointer" id="drop-zone">
+            <svg class="w-10 h-10 text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <p class="text-sm text-gray-400 mb-1">Drop an image here or click to browse</p>
+            <p class="text-xs text-gray-600">PNG, JPG, WEBP up to 20MB</p>
+            <input type="file" id="file-input" accept="image/*" class="hidden">
+        </div>
+
+        <div id="result" class="mt-4 hidden">
+            <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+                <h3 class="text-sm font-medium mb-2">Detected Objects</h3>
+                <p id="output-text" class="text-sm text-gray-300 whitespace-pre-wrap"></p>
+                <p id="credits-info" class="text-xs text-gray-500 mt-2"></p>
             </div>
-            <button type="submit" class="mt-4 w-full bg-purple-600 hover:bg-purple-500 text-white rounded-lg px-4 py-2.5 text-sm font-medium transition">Detect Objects</button>
         </div>
-    </form>
-    <div id="result" class="mt-4 hidden">
-        <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
-            <h3 class="text-sm font-medium mb-2">Detected Objects</h3>
-            <p id="objectsText" class="text-sm text-gray-300 whitespace-pre-wrap"></p>
-            <p id="creditsInfo" class="text-xs text-gray-500 mt-2"></p>
+
+        <div id="loading" class="mt-4 text-center hidden">
+            <div class="animate-spin w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+            <p class="text-sm text-gray-500">Detecting objects...</p>
         </div>
+
+        <div id="error" class="mt-4 text-center text-red-400 text-sm hidden"></div>
     </div>
 </div>
+{% endblock %}
+{% block scripts %}
 <script>
-document.getElementById('detectForm').onsubmit = async (e) => {
-    e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]');
-    btn.textContent = 'Detecting...'; btn.disabled = true;
-    const res = await fetch('/tools/image/detect', {method:'POST', body:new FormData(e.target)});
-    const d = await res.json();
-    if (d.objects) {
-        document.getElementById('objectsText').textContent = d.objects;
-        document.getElementById('creditsInfo').textContent = `Credits remaining: ${d.credits_remaining}`;
-        document.getElementById('result').classList.remove('hidden');
-    } else { alert(d.error); }
-    btn.textContent = 'Detect Objects'; btn.disabled = false;
-};
+document.addEventListener('DOMContentLoaded', () => {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const result = document.getElementById('result');
+    const outputText = document.getElementById('output-text');
+    const loading = document.getElementById('loading');
+    const error = document.getElementById('error');
+    const creditsInfo = document.getElementById('credits-info');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drop-active'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drop-active'));
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drop-active');
+        if (e.dataTransfer.files.length) processFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) processFile(fileInput.files[0]);
+    });
+
+    async function processFile(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        result.classList.add('hidden');
+        error.classList.add('hidden');
+        loading.classList.remove('hidden');
+
+        try {
+            const res = await fetch('/tools/image/detect', { method: 'POST', body: formData });
+            const data = await res.json();
+            loading.classList.add('hidden');
+            if (res.status === 402) {
+                error.textContent = data.message || 'Insufficient credits.';
+                error.classList.remove('hidden');
+                return;
+            }
+            if (data.error) {
+                error.textContent = data.error;
+                error.classList.remove('hidden');
+                return;
+            }
+            outputText.textContent = data.objects || data.text || '(No objects detected)';
+            creditsInfo.textContent = `Credits remaining: ${data.credits_remaining}`;
+            result.classList.remove('hidden');
+            updateCredits(data.credits_remaining);
+        } catch (e) {
+            loading.classList.add('hidden');
+            error.textContent = 'Error detecting objects.';
+            error.classList.remove('hidden');
+        }
+    }
+});
 </script>
 {% endblock %}

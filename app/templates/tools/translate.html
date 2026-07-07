@@ -1,53 +1,108 @@
 {% extends "base.html" %}
-{% block title %}Document Translate — NexerSuite{% endblock %}
+{% block title %}Document Translation — NexerSuite{% endblock %}
 {% block content %}
-<div class="max-w-2xl mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold mb-2">Document Translate</h1>
-    <p class="text-gray-500 text-sm mb-6">Translate text between languages — uses 10 credits</p>
-    <form id="translateForm" class="space-y-4">
-        <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
-            <div>
-                <label class="block text-sm text-gray-400 mb-2">Text to Translate</label>
-                <textarea name="text" rows="6" required class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-purple-500"></textarea>
-            </div>
-            <div class="mt-4">
-                <label class="block text-sm text-gray-400 mb-2">Target Language</label>
-                <select name="target_language" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-sm">
-                    <option value="Spanish">Spanish</option>
-                    <option value="French">French</option>
-                    <option value="German">German</option>
-                    <option value="Chinese">Chinese</option>
-                    <option value="Japanese">Japanese</option>
-                    <option value="Arabic">Arabic</option>
-                    <option value="Portuguese">Portuguese</option>
-                    <option value="Russian">Russian</option>
-                    <option value="Hindi">Hindi</option>
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold">Document Translation</h1>
+        <p class="text-sm text-gray-500">Translate text between languages using AI. <span class="text-purple-400">3 credits per 100 chars</span></p>
+    </div>
+
+    <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+        <div>
+            <label class="block text-sm text-gray-400 mb-2">Text to Translate</label>
+            <textarea id="text-input" rows="5" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple-500/50 resize-none" placeholder="Enter text to translate..."></textarea>
+        </div>
+
+        <div class="flex items-center space-x-3 mt-4">
+            <div class="flex-1">
+                <label class="block text-sm text-gray-400 mb-1">Target Language</label>
+                <select id="lang-select" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-purple-500">
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                    <option value="it">Italian</option>
+                    <option value="pt">Portuguese</option>
+                    <option value="zh-CN">Chinese</option>
+                    <option value="ja">Japanese</option>
+                    <option value="ko">Korean</option>
                 </select>
             </div>
-            <button type="submit" class="mt-4 w-full bg-purple-600 hover:bg-purple-500 text-white rounded-lg px-4 py-2.5 text-sm font-medium transition">Translate</button>
+            <button id="submit-btn" class="mt-5 bg-gradient-to-r from-purple-600 to-cyan-500 rounded-xl px-6 py-2.5 text-sm font-medium hover:opacity-90 transition disabled:opacity-50" disabled>Translate</button>
         </div>
-    </form>
-    <div id="result" class="mt-4 hidden">
-        <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
-            <h3 class="text-sm font-medium mb-2">Translation</h3>
-            <p id="translationText" class="text-sm text-gray-300"></p>
-            <p id="creditsInfo" class="text-xs text-gray-500 mt-2"></p>
+
+        <div id="result" class="mt-4 hidden">
+            <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+                <h3 class="text-sm font-medium mb-2">Translation</h3>
+                <p id="output-text" class="text-sm text-gray-300 whitespace-pre-wrap"></p>
+                <p id="credits-info" class="text-xs text-gray-500 mt-2"></p>
+            </div>
         </div>
+
+        <div id="loading" class="mt-4 text-center hidden">
+            <div class="animate-spin w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+            <p class="text-sm text-gray-500">Translating...</p>
+        </div>
+
+        <div id="error" class="mt-4 text-center text-red-400 text-sm hidden"></div>
     </div>
 </div>
+{% endblock %}
+{% block scripts %}
 <script>
-document.getElementById('translateForm').onsubmit = async (e) => {
-    e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]');
-    btn.textContent = 'Translating...'; btn.disabled = true;
-    const data = Object.fromEntries(new FormData(e.target));
-    const res = await fetch('/tools/document/translate', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
-    const d = await res.json();
-    if (d.translation) {
-        document.getElementById('translationText').textContent = d.translation;
-        document.getElementById('creditsInfo').textContent = `Credits remaining: ${d.credits_remaining}`;
-        document.getElementById('result').classList.remove('hidden');
-    } else { alert(d.error); }
-    btn.textContent = 'Translate'; btn.disabled = false;
-};
+document.addEventListener('DOMContentLoaded', () => {
+    const textInput = document.getElementById('text-input');
+    const submitBtn = document.getElementById('submit-btn');
+    const langSelect = document.getElementById('lang-select');
+    const result = document.getElementById('result');
+    const outputText = document.getElementById('output-text');
+    const loading = document.getElementById('loading');
+    const error = document.getElementById('error');
+    const creditsInfo = document.getElementById('credits-info');
+
+    textInput.addEventListener('input', () => {
+        submitBtn.disabled = !textInput.value.trim();
+    });
+
+    submitBtn.addEventListener('click', async () => {
+        const text = textInput.value.trim();
+        if (!text) return;
+
+        result.classList.add('hidden');
+        error.classList.add('hidden');
+        loading.classList.remove('hidden');
+        submitBtn.disabled = true;
+
+        try {
+            const res = await fetch('/tools/document/translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text, language: langSelect.value })
+            });
+            const data = await res.json();
+            loading.classList.add('hidden');
+            submitBtn.disabled = false;
+
+            if (res.status === 402) {
+                error.textContent = data.message || 'Insufficient credits.';
+                error.classList.remove('hidden');
+                return;
+            }
+            if (data.error) {
+                error.textContent = data.error;
+                error.classList.remove('hidden');
+                return;
+            }
+            outputText.textContent = data.translation || data.text || '(No translation)';
+            creditsInfo.textContent = `Credits remaining: ${data.credits_remaining}`;
+            result.classList.remove('hidden');
+            updateCredits(data.credits_remaining);
+        } catch (e) {
+            loading.classList.add('hidden');
+            submitBtn.disabled = false;
+            error.textContent = 'Error translating text.';
+            error.classList.remove('hidden');
+        }
+    });
+});
 </script>
 {% endblock %}

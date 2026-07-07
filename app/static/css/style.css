@@ -25,11 +25,6 @@ textarea {
   transition-timing-function: ease;
 }
 
-/* Loading spinner */
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
 /* Dark scrollbar for chat */
 #chat-messages::-webkit-scrollbar {
   width: 4px;
@@ -37,4 +32,124 @@ textarea {
 #chat-messages::-webkit-scrollbar-thumb {
   background: #374151;
   border-radius: 2px;
+}
+
+/* Toast notifications */
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 24rem;
+  animation: toast-in 0.3s ease-out;
+}
+
+.toast-success {
+  background: #065f46;
+  border: 1px solid #059669;
+  color: #a7f3d0;
+}
+
+.toast-error {
+  background: #7f1d1d;
+  border: 1px solid #dc2626;
+  color: #fecaca;
+}
+
+.toast-info {
+  background: #1e3a5f;
+  border: 1px solid #2563eb;
+  color: #bfdbfe;
+}
+
+.toast-leaving {
+  animation: toast-out 0.3s ease-in forwards;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes toast-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(2rem);
+  }
+}
+
+/* Mobile menu slide */
+#mobile-menu {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
+  opacity: 0;
+}
+
+#mobile-menu.open {
+  max-height: 400px;
+  opacity: 1;
+}
+
+/* Hamburger animation */
+.hamburger-line {
+  transition: transform 0.3s ease, opacity 0.2s ease;
+}
+
+#mobile-menu-btn.open .hamburger-line:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+
+#mobile-menu-btn.open .hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+
+#mobile-menu-btn.open .hamburger-line:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+/* Credit progress bar */
+.credit-bar-track {
+  background: #1f2937;
+  border-radius: 999px;
+  overflow: hidden;
+  height: 4px;
+}
+
+.credit-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(to right, #a855f7, #22d3ee);
+  transition: width 0.4s ease;
+}
+
+/* Drag-drop active state */
+.drop-active {
+  border-color: #a855f7 !important;
+  background: rgba(168, 85, 247, 0.05);
 }

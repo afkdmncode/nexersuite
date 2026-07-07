@@ -4,7 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}AI Platform{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+        }
+    }
+    </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block head %}{% endblock %}
 </head>
@@ -16,6 +27,8 @@
                     <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-cyan-400 rounded-lg flex items-center justify-center text-white font-bold text-sm">AI</div>
                     <span class="font-semibold text-lg">NexerSuite</span>
                 </a>
+
+                <!-- Desktop nav -->
                 <div class="hidden md:flex items-center space-x-6">
                     <a href="/#tools" class="text-gray-400 hover:text-white transition text-sm">Tools</a>
                     <a href="/chat" class="text-gray-400 hover:text-white transition text-sm">Chat</a>
@@ -23,9 +36,14 @@
                     <a href="/pricing" class="text-gray-400 hover:text-white transition text-sm">Pricing</a>
                     <a href="/credits" class="text-gray-400 hover:text-white transition text-sm">Credits</a>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <a href="/credits" class="text-xs text-gray-500 border border-gray-700 px-3 py-1.5 rounded-full hover:border-gray-500 transition">
-                        <span id="nav-credits">--</span> credits
+
+                <!-- Desktop right side -->
+                <div class="hidden md:flex items-center space-x-3">
+                    <a href="/credits" class="flex items-center space-x-2 text-xs text-gray-500 border border-gray-700 px-3 py-1.5 rounded-full hover:border-gray-500 transition">
+                        <div class="credit-bar-track w-12">
+                            <div id="credit-bar-fill" class="credit-bar-fill" style="width:0%"></div>
+                        </div>
+                        <span id="nav-credits">--</span>
                     </a>
                     {% if current_user and current_user.is_authenticated %}
                     <div class="relative group">
@@ -37,6 +55,41 @@
                             <a href="/auth/logout" class="block px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-b-xl">Logout</a>
                         </div>
                     </div>
+                    {% else %}
+                    <a href="/auth/login" class="text-xs text-gray-400 border border-gray-700 px-3 py-1.5 rounded-full hover:border-gray-500 transition">Login</a>
+                    <a href="/auth/register" class="text-xs bg-purple-600 text-white px-3 py-1.5 rounded-full hover:bg-purple-500 transition">Sign Up</a>
+                    {% endif %}
+                </div>
+
+                <!-- Mobile hamburger -->
+                <button id="mobile-menu-btn" class="md:hidden p-2 text-gray-400 hover:text-white transition" aria-label="Toggle menu">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path class="hamburger-line" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16"/>
+                        <path class="hamburger-line" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h16"/>
+                        <path class="hamburger-line" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden border-t border-gray-800 bg-gray-950">
+            <div class="px-4 py-4 space-y-3">
+                <a href="/#tools" class="block text-gray-400 hover:text-white transition text-sm">Tools</a>
+                <a href="/chat" class="block text-gray-400 hover:text-white transition text-sm">Chat</a>
+                <a href="/api/v1/" class="block text-gray-400 hover:text-white transition text-sm">API</a>
+                <a href="/pricing" class="block text-gray-400 hover:text-white transition text-sm">Pricing</a>
+                <a href="/credits" class="block text-gray-400 hover:text-white transition text-sm">Credits</a>
+                <div class="border-t border-gray-800 pt-3 flex items-center space-x-3">
+                    <a href="/credits" class="flex items-center space-x-2 text-xs text-gray-500 border border-gray-700 px-3 py-1.5 rounded-full hover:border-gray-500 transition">
+                        <div class="credit-bar-track w-12">
+                            <div id="credit-bar-fill-mobile" class="credit-bar-fill" style="width:0%"></div>
+                        </div>
+                        <span id="nav-credits-mobile">--</span>
+                    </a>
+                    {% if current_user and current_user.is_authenticated %}
+                    <a href="/auth/profile" class="text-xs text-gray-400 border border-gray-700 px-3 py-1.5 rounded-full hover:border-gray-500 transition">Profile</a>
+                    <a href="/auth/logout" class="text-xs text-gray-400 border border-gray-700 px-3 py-1.5 rounded-full hover:border-gray-500 transition">Logout</a>
                     {% else %}
                     <a href="/auth/login" class="text-xs text-gray-400 border border-gray-700 px-3 py-1.5 rounded-full hover:border-gray-500 transition">Login</a>
                     <a href="/auth/register" class="text-xs bg-purple-600 text-white px-3 py-1.5 rounded-full hover:bg-purple-500 transition">Sign Up</a>
@@ -90,6 +143,7 @@
         </div>
     </footer>
 
+    <div id="toast-container" class="toast-container"></div>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>

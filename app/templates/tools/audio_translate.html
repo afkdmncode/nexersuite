@@ -1,49 +1,104 @@
 {% extends "base.html" %}
 {% block title %}Audio Translation — NexerSuite{% endblock %}
 {% block content %}
-<div class="max-w-2xl mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold mb-2">Audio Translation</h1>
-    <p class="text-gray-500 text-sm mb-6">Transcribe and translate audio — uses 5 credits</p>
-    <form id="translateForm" enctype="multipart/form-data" class="space-y-4">
-        <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
-            <div>
-                <label class="block text-sm text-gray-400 mb-2">Upload Audio</label>
-                <input type="file" name="file" accept="audio/*" required class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700">
-            </div>
-            <div class="mt-4">
-                <label class="block text-sm text-gray-400 mb-2">Target Language</label>
-                <select name="target_language" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-sm">
-                    <option value="en">English</option>
-                    <option value="es">Spanish</option>
-                    <option value="fr">French</option>
-                    <option value="de">German</option>
-                    <option value="zh">Chinese</option>
-                    <option value="ja">Japanese</option>
-                </select>
-            </div>
-            <button type="submit" class="mt-4 w-full bg-purple-600 hover:bg-purple-500 text-white rounded-lg px-4 py-2.5 text-sm font-medium transition">Translate</button>
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold">Audio Translation</h1>
+        <p class="text-sm text-gray-500">Translate spoken audio to another language. <span class="text-purple-400">12 credits</span></p>
+    </div>
+
+    <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+        <div class="border-2 border-dashed border-gray-700 rounded-xl p-8 text-center hover:border-purple-500/50 transition cursor-pointer" id="drop-zone">
+            <svg class="w-10 h-10 text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m0 4a4 4 0 100 8 4 4 0 000-8z"/></svg>
+            <p class="text-sm text-gray-400 mb-1">Drop an audio file here or click to browse</p>
+            <p class="text-xs text-gray-600">WAV, MP3, FLAC up to 50MB</p>
+            <input type="file" id="file-input" accept="audio/*" class="hidden">
         </div>
-    </form>
-    <div id="result" class="mt-4 hidden">
-        <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
-            <h3 class="text-sm font-medium mb-2">Translated Text</h3>
-            <p id="translatedText" class="text-sm text-gray-300"></p>
-            <p id="creditsInfo" class="text-xs text-gray-500 mt-2"></p>
+
+        <div class="mt-4">
+            <label class="block text-sm text-gray-400 mb-2">Target Language</label>
+            <select id="lang-select" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-purple-500">
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="zh-CN">Chinese</option>
+                <option value="ja">Japanese</option>
+            </select>
         </div>
+
+        <div id="result" class="mt-4 hidden">
+            <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+                <h3 class="text-sm font-medium mb-2">Translation</h3>
+                <p id="output-text" class="text-sm text-gray-300 whitespace-pre-wrap"></p>
+                <p id="credits-info" class="text-xs text-gray-500 mt-2"></p>
+            </div>
+        </div>
+
+        <div id="loading" class="mt-4 text-center hidden">
+            <div class="animate-spin w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+            <p class="text-sm text-gray-500">Translating...</p>
+        </div>
+
+        <div id="error" class="mt-4 text-center text-red-400 text-sm hidden"></div>
     </div>
 </div>
+{% endblock %}
+{% block scripts %}
 <script>
-document.getElementById('translateForm').onsubmit = async (e) => {
-    e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]');
-    btn.textContent = 'Translating...'; btn.disabled = true;
-    const res = await fetch('/tools/audio/translate', {method:'POST', body:new FormData(e.target)});
-    const d = await res.json();
-    if (d.text) {
-        document.getElementById('translatedText').textContent = d.text;
-        document.getElementById('creditsInfo').textContent = `Credits remaining: ${d.credits_remaining}`;
-        document.getElementById('result').classList.remove('hidden');
-    } else { alert(d.error); }
-    btn.textContent = 'Translate'; btn.disabled = false;
-};
+document.addEventListener('DOMContentLoaded', () => {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const result = document.getElementById('result');
+    const outputText = document.getElementById('output-text');
+    const loading = document.getElementById('loading');
+    const error = document.getElementById('error');
+    const creditsInfo = document.getElementById('credits-info');
+    const langSelect = document.getElementById('lang-select');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drop-active'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drop-active'));
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drop-active');
+        if (e.dataTransfer.files.length) processFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) processFile(fileInput.files[0]);
+    });
+
+    async function processFile(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('language', langSelect.value);
+        result.classList.add('hidden');
+        error.classList.add('hidden');
+        loading.classList.remove('hidden');
+
+        try {
+            const res = await fetch('/tools/audio/translate', { method: 'POST', body: formData });
+            const data = await res.json();
+            loading.classList.add('hidden');
+            if (res.status === 402) {
+                error.textContent = data.message || 'Insufficient credits.';
+                error.classList.remove('hidden');
+                return;
+            }
+            if (data.error) {
+                error.textContent = data.error;
+                error.classList.remove('hidden');
+                return;
+            }
+            outputText.textContent = data.text || '(No translation)';
+            creditsInfo.textContent = `Credits remaining: ${data.credits_remaining}`;
+            result.classList.remove('hidden');
+            updateCredits(data.credits_remaining);
+        } catch (e) {
+            loading.classList.add('hidden');
+            error.textContent = 'Error processing file.';
+            error.classList.remove('hidden');
+        }
+    }
+});
 </script>
 {% endblock %}

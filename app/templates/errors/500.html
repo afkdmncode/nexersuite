@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Server Error — NexerSuite{% endblock %}
+{% block content %}
+<div class="min-h-[60vh] flex items-center justify-center px-4">
+    <div class="text-center max-w-md">
+        <div class="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-cyan-400/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-cyan-400 rounded-2xl flex items-center justify-center text-white font-bold text-3xl">!</div>
+        </div>
+        <h1 class="text-6xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent mb-4">500</h1>
+        <p class="text-gray-400 mb-8">Something went wrong on our end. Please try again later.</p>
+        <a href="/" class="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-cyan-500 rounded-xl px-6 py-3 text-sm font-medium hover:opacity-90 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            <span>Go Home</span>
+        </a>
+    </div>
+</div>
+{% endblock %}
