@@ -1,0 +1,70 @@
+{% extends "admin/base.html" %}
+{% block title %}Usage Logs{% endblock %}
+{% block content %}
+<div class="p-6">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-bold">Usage Logs</h1>
+            <p class="text-sm text-gray-500">Detailed tool usage records with filtering</p>
+        </div>
+    </div>
+
+    <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-4 mb-6">
+        <form class="flex items-center space-x-3" method="GET">
+            <select name="tool" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500/50">
+                <option value="">All Tools</option>
+                {% for t in tools %}
+                <option value="{{ t.slug }}" {% if tool_filter == t.slug %}selected{% endif %}>{{ t.name }}</option>
+                {% endfor %}
+            </select>
+            <input type="text" name="ip" placeholder="Filter by IP..." value="{{ ip_filter }}"
+                class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500/50 w-48">
+            <button type="submit" class="bg-purple-600/20 text-purple-400 px-4 py-2 rounded-lg text-sm hover:bg-purple-600/30 transition">Filter</button>
+        </form>
+    </div>
+
+    <div class="bg-gray-900/50 border border-gray-800 rounded-2xl overflow-hidden">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="bg-gray-800/50 text-left text-gray-500 text-xs uppercase tracking-wider">
+                    <th class="px-5 py-3">Timestamp</th>
+                    <th class="px-5 py-3">IP Address</th>
+                    <th class="px-5 py-3">Tool</th>
+                    <th class="px-5 py-3">Credits</th>
+                    <th class="px-5 py-3">User</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs.items %}
+                <tr class="border-t border-gray-800/50 hover:bg-gray-800/20">
+                    <td class="px-5 py-3 text-xs text-gray-500">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td class="px-5 py-3 text-xs font-mono">{{ log.ip_address }}</td>
+                    <td class="px-5 py-3 text-xs text-purple-400">{{ log.tool_slug }}</td>
+                    <td class="px-5 py-3 text-xs">{{ log.credits_spent }}</td>
+                    <td class="px-5 py-3 text-xs text-gray-500">{{ log.user_id or 'anonymous' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="px-5 py-8 text-center text-sm text-gray-500">No usage logs found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if logs.pages > 1 %}
+    <div class="flex justify-center mt-6 space-x-2">
+        {% for page_num in logs.iter_pages() %}
+            {% if page_num %}
+            <a href="/admin/usage?page={{ page_num }}{% if tool_filter %}&tool={{ tool_filter }}{% endif %}{% if ip_filter %}&ip={{ ip_filter }}{% endif %}"
+                class="px-3 py-1.5 text-sm rounded-lg {% if page_num == logs.page %}bg-purple-600 text-white{% else %}bg-gray-800 text-gray-400 hover:bg-gray-700 transition{% endif %}">
+                {{ page_num }}
+            </a>
+            {% else %}
+            <span class="px-3 py-1.5 text-sm text-gray-600">…</span>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ tool.name if tool else tool_name }} — NovaForge{% endblock %}
+{% block content %}
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+    <div class="w-16 h-16 bg-gradient-to-br from-purple-500/20 to-cyan-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+        <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+    </div>
+    <h1 class="text-2xl font-bold mb-2">{{ tool.name if tool else tool_name|replace('-', ' ')|title }}</h1>
+    <p class="text-gray-500 mb-2">This tool is coming soon!</p>
+    {% if tool %}
+    <p class="text-sm text-gray-600">{{ tool.description }}</p>
+    <p class="text-xs text-gray-600 mt-2">Credit cost: {{ tool.credit_cost }}</p>
+    {% endif %}
+    <a href="/#tools" class="inline-block mt-8 px-6 py-2.5 border border-gray-700 rounded-full text-sm hover:border-gray-500 transition">
+        Browse All Tools
+    </a>
+</div>
+
+{% endblock %}

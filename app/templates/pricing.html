@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Pricing — NovaForge{% endblock %}
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold mb-4">Simple, Transparent Pricing</h1>
+        <p class="text-gray-500">Start free. Upgrade when you need more.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-8">
+            <h3 class="text-lg font-semibold mb-2">Free</h3>
+            <div class="text-4xl font-bold mb-6">$0<span class="text-sm text-gray-500 font-normal">/mo</span></div>
+            <ul class="space-y-3 text-sm text-gray-400 mb-8">
+                <li class="flex items-start space-x-2">
+                    <svg class="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>85 free credits</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <svg class="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>Access to all tools</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <svg class="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>IP-based tracking across devices</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <svg class="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>No credit card required</span>
+                </li>
+            </ul>
+            <a href="/chat" class="block text-center py-3 border border-gray-700 rounded-full text-sm hover:border-gray-500 transition">Get Started</a>
+        </div>
+
+        <div class="bg-gradient-to-b from-purple-900/30 to-gray-900/50 border border-purple-500/30 rounded-2xl p-8 relative scale-105">
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-500 text-xs px-4 py-1 rounded-full font-medium">Popular</div>
+            <h3 class="text-lg font-semibold mb-2">Pro</h3>
+            <div class="text-4xl font-bold mb-6">$10<span class="text-sm text-gray-500 font-normal">/mo</span></div>
+            <ul class="space-y-3 text-sm text-gray-400 mb-8">
+                <li class="flex items-start space-x-2">
+                    <svg class="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>2,000 credits per month</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <svg class="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>No IP restrictions</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <svg class="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>Full API access</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <svg class="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>Priority support</span>
+                </li>
+            </ul>
+            <a href="#" class="block text-center py-3 bg-gradient-to-r from-purple-600 to-cyan-500 rounded-full text-sm font-medium hover:opacity-90 transition">Coming Soon</a>
+        </div>
+
+        <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-8">
+            <h3 class="text-lg font-semibold mb-2">Unlimited</h3>
+            <div class="text-4xl font-bold mb-6">$29<span class="text-sm text-gray-500 font-normal">/mo</span></div>
+            <ul class="space-y-3 text-sm text-gray-400 mb-8">
+                <li class="flex items-start space-x-2">
+                    <svg class="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>Unlimited credits</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <svg class="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>No IP restrictions</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <svg class="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>Full API access</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <svg class="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>Early access to new tools</span>
+                </li>
+            </ul>
+            <a href="#" class="block text-center py-3 border border-gray-700 rounded-full text-sm hover:border-gray-500 transition">Coming Soon</a>
+        </div>
+    </div>
+
+    <div class="mt-12 max-w-3xl mx-auto bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+        <h3 class="font-semibold mb-4 text-center">Credit Usage Examples</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center text-sm">
+            <div class="bg-gray-800/50 rounded-xl p-3">
+                <div class="text-purple-400 font-bold text-lg">5</div>
+                <div class="text-gray-500 text-xs">Chat message</div>
+            </div>
+            <div class="bg-gray-800/50 rounded-xl p-3">
+                <div class="text-purple-400 font-bold text-lg">10</div>
+                <div class="text-gray-500 text-xs">OCR scan</div>
+            </div>
+            <div class="bg-gray-800/50 rounded-xl p-3">
+                <div class="text-purple-400 font-bold text-lg">20</div>
+                <div class="text-gray-500 text-xs">Image generation</div>
+            </div>
+            <div class="bg-gray-800/50 rounded-xl p-3">
+                <div class="text-purple-400 font-bold text-lg">3</div>
+                <div class="text-gray-500 text-xs">TTS (100 chars)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

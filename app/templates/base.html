@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI Platform{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+    <nav class="border-b border-gray-800 bg-gray-950/95 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <a href="/" class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-cyan-400 rounded-lg flex items-center justify-center text-white font-bold text-sm">AI</div>
+                    <span class="font-semibold text-lg">NovaForge</span>
+                </a>
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="/#tools" class="text-gray-400 hover:text-white transition text-sm">Tools</a>
+                    <a href="/chat" class="text-gray-400 hover:text-white transition text-sm">Chat</a>
+                    <a href="/api/v1/" class="text-gray-400 hover:text-white transition text-sm">API</a>
+                    <a href="/pricing" class="text-gray-400 hover:text-white transition text-sm">Pricing</a>
+                    <a href="/credits" class="text-gray-400 hover:text-white transition text-sm">Credits</a>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <a href="/credits" class="text-xs text-gray-500 border border-gray-700 px-3 py-1.5 rounded-full hover:border-gray-500 transition">
+                        <span id="nav-credits">--</span> credits
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="border-t border-gray-800 bg-gray-950 py-12 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-cyan-400 rounded-lg flex items-center justify-center text-white font-bold text-sm">AI</div>
+                        <span class="font-semibold">NovaForge</span>
+                    </div>
+                    <p class="text-gray-500 text-sm">AI-powered tools for everyone. Create, transform, and innovate.</p>
+                </div>
+                <div>
+                    <h4 class="font-medium mb-3 text-sm">Tools</h4>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li><a href="/tools/ocr" class="hover:text-white transition">Document OCR</a></li>
+                        <li><a href="/tools/image-gen" class="hover:text-white transition">Image Generation</a></li>
+                        <li><a href="/tools/tts" class="hover:text-white transition">Text to Speech</a></li>
+                        <li><a href="/chat" class="hover:text-white transition">AI Chat</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-medium mb-3 text-sm">Resources</h4>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li><a href="/api/v1/" class="hover:text-white transition">API Docs</a></li>
+                        <li><a href="/pricing" class="hover:text-white transition">Pricing</a></li>
+                        <li><a href="/credits" class="hover:text-white transition">Credits</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-medium mb-3 text-sm">Company</h4>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li><a href="/about" class="hover:text-white transition">About</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-600">
+                &copy; 2026 NovaForge. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

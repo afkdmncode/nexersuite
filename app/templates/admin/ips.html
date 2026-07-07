@@ -1,0 +1,76 @@
+{% extends "admin/base.html" %}
+{% block title %}IP Pools{% endblock %}
+{% block content %}
+<div class="p-6">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold">IP Credit Pools</h1>
+        <p class="text-sm text-gray-500">View and manage free credit allocations per IP address</p>
+    </div>
+
+    <div class="bg-gray-900/50 border border-gray-800 rounded-2xl overflow-hidden">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="bg-gray-800/50 text-left text-gray-500 text-xs uppercase tracking-wider">
+                    <th class="px-5 py-3">IP Address</th>
+                    <th class="px-5 py-3">Free Credits</th>
+                    <th class="px-5 py-3">Total Used</th>
+                    <th class="px-5 py-3">Created</th>
+                    <th class="px-5 py-3">Last Reset</th>
+                    <th class="px-5 py-3">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pool in pools.items %}
+                <tr class="border-t border-gray-800/50 hover:bg-gray-800/20">
+                    <td class="px-5 py-3 text-xs font-mono">{{ pool.ip_address }}</td>
+                    <td class="px-5 py-3">
+                        <span class="{% if pool.free_credits < 20 %}text-red-400{% elif pool.free_credits < 50 %}text-yellow-400{% else %}text-emerald-400{% endif %} font-medium">{{ pool.free_credits }}</span>
+                    </td>
+                    <td class="px-5 py-3 text-xs text-gray-500">{{ pool.total_used }}</td>
+                    <td class="px-5 py-3 text-xs text-gray-500">{{ pool.created_at.strftime('%Y-%m-%d %H:%M') if pool.created_at else '—' }}</td>
+                    <td class="px-5 py-3 text-xs text-gray-500">{{ pool.last_reset.strftime('%Y-%m-%d %H:%M') if pool.last_reset else '—' }}</td>
+                    <td class="px-5 py-3">
+                        <button onclick="resetIp({{ pool.id }})"
+                            class="text-xs bg-yellow-600/20 text-yellow-400 px-3 py-1.5 rounded-lg hover:bg-yellow-600/30 transition">
+                            Reset Credits
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="px-5 py-8 text-center text-sm text-gray-500">No IP pools yet</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if pools.pages > 1 %}
+    <div class="flex justify-center mt-6 space-x-2">
+        {% for page_num in pools.iter_pages() %}
+            {% if page_num %}
+            <a href="/admin/ips?page={{ page_num }}"
+                class="px-3 py-1.5 text-sm rounded-lg {% if page_num == pools.page %}bg-purple-600 text-white{% else %}bg-gray-800 text-gray-400 hover:bg-gray-700 transition{% endif %}">
+                {{ page_num }}
+            </a>
+            {% else %}
+            <span class="px-3 py-1.5 text-sm text-gray-600">…</span>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+async function resetIp(id) {
+    if (!confirm('Reset credits for this IP?')) return;
+    const formData = new FormData();
+    formData.append('ip_id', id);
+    const res = await fetch('/admin/ips/reset', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (data.success) {
+        location.reload();
+    }
+}
+</script>
+{% endblock %}

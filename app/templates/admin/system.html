@@ -1,0 +1,68 @@
+{% extends "admin/base.html" %}
+{% block title %}System{% endblock %}
+{% block content %}
+<div class="p-6">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold">System Health</h1>
+        <p class="text-sm text-gray-500">Server metrics, database info, and log storage</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-5">
+            <h2 class="font-semibold mb-4">System Info</h2>
+            {% if system_info is mapping %}
+            <dl class="space-y-3">
+                {% for key, value in system_info.items() %}
+                <div class="flex justify-between py-1 border-b border-gray-800/30">
+                    <dt class="text-sm text-gray-500">{{ key|replace('_', ' ')|title }}</dt>
+                    <dd class="text-sm text-gray-200">
+                        {% if 'percent' in key %}
+                        <div class="flex items-center space-x-2">
+                            <div class="w-24 bg-gray-800 rounded-full h-1.5">
+                                <div class="bg-gradient-to-r from-purple-500 to-cyan-400 h-1.5 rounded-full" style="width: {{ value }}%"></div>
+                            </div>
+                            <span>{{ '%.1f'|format(value) }}%</span>
+                        </div>
+                        {% elif 'mb' in key or 'gb' in key %}
+                        {{ '%.1f'|format(value) }} {{ 'GB' if 'gb' in key else 'MB' }}
+                        {% else %}
+                        {{ value }}
+                        {% endif %}
+                    </dd>
+                </div>
+                {% endfor %}
+            </dl>
+            {% else %}
+            <p class="text-sm text-gray-500">{{ system_info.status }}</p>
+            {% endif %}
+        </div>
+
+        <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-5">
+            <h2 class="font-semibold mb-4">Database</h2>
+            <dl class="space-y-3">
+                <div class="flex justify-between py-1 border-b border-gray-800/30">
+                    <dt class="text-sm text-gray-500">Engine</dt>
+                    <dd class="text-sm text-gray-200">SQLite</dd>
+                </div>
+                <div class="flex justify-between py-1 border-b border-gray-800/30">
+                    <dt class="text-sm text-gray-500">Size</dt>
+                    <dd class="text-sm text-gray-200">{{ db_size_mb }} MB</dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+
+    <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-5">
+        <h2 class="font-semibold mb-4">Log Storage</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {% for name, stats in log_stats.items() %}
+            <div class="bg-gray-800/30 rounded-xl p-4 text-center">
+                <p class="text-xs text-gray-500 mb-1">{{ name }}.log</p>
+                <p class="text-lg font-bold">{{ stats.size_mb }} MB</p>
+                <p class="text-xs text-gray-600">{{ stats.lines }} lines</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

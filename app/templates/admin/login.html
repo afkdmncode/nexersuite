@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login — NovaForge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen flex items-center justify-center">
+    <div class="w-full max-w-sm px-6">
+        <div class="text-center mb-8">
+            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-cyan-400 rounded-xl flex items-center justify-center text-white font-bold text-lg mx-auto mb-3">AI</div>
+            <h1 class="text-xl font-bold">Admin Login</h1>
+            <p class="text-sm text-gray-500 mt-1">NovaForge Administration</p>
+        </div>
+
+        <form method="POST" class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+            {% if error %}
+            <div class="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-sm text-red-400 mb-4">{{ error }}</div>
+            {% endif %}
+            <div class="mb-4">
+                <label class="text-sm text-gray-400 mb-1 block">Admin Password</label>
+                <input type="password" name="password" required class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple-500/50" placeholder="Enter admin password">
+            </div>
+            <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-cyan-500 rounded-xl py-3 text-sm font-medium hover:opacity-90 transition">Login</button>
+        </form>
+        <div class="text-center mt-4">
+            <a href="/" class="text-sm text-gray-600 hover:text-gray-400 transition">&larr; Back to site</a>
+        </div>
+    </div>
+</body>
+</html>

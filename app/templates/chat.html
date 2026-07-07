@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}AI Chat — NovaForge{% endblock %}
+{% block content %}
+
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-bold">AI Chat</h1>
+            <p class="text-sm text-gray-500">Chat with AI. Use tools by typing commands like <span class="text-purple-400">/ocr</span>, <span class="text-purple-400">/imagine</span>, <span class="text-purple-400">/tts</span></p>
+        </div>
+        <div class="text-right text-xs text-gray-500">
+            Credits: <span id="chat-credits" class="text-purple-400 font-medium">--</span>
+        </div>
+    </div>
+
+    <div id="chat-container" class="bg-gray-900/50 border border-gray-800 rounded-2xl h-[65vh] flex flex-col">
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+            <div class="flex items-start space-x-3">
+                <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-xs font-bold shrink-0">AI</div>
+                <div class="bg-gray-800 rounded-2xl rounded-tl-sm px-4 py-3 max-w-lg">
+                    <p class="text-sm">Hello! I'm your AI assistant. I can help you with:</p>
+                    <ul class="text-sm mt-2 space-y-1">
+                        <li>💬 General conversation and questions</li>
+                        <li>📄 <strong>/ocr</strong> — Extract text from documents</li>
+                        <li>🎨 <strong>/imagine</strong> — Generate images from prompts</li>
+                        <li>🔊 <strong>/tts</strong> — Convert text to speech</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t border-gray-800 p-4">
+            <div class="flex items-end space-x-3">
+                <div class="flex-1 relative">
+                    <textarea id="chat-input" rows="1" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 pr-12 text-sm focus:outline-none focus:border-purple-500/50 resize-none" placeholder="Type a message or /command..."></textarea>
+                    <button id="tool-btn" class="absolute right-3 bottom-3 text-gray-500 hover:text-gray-300 transition" title="Use a tool">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                    </button>
+                </div>
+                <button id="send-btn" class="bg-gradient-to-r from-purple-600 to-cyan-500 rounded-xl p-3 hover:opacity-90 transition disabled:opacity-50" disabled>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19V5m0 0l-7 7m7-7l7 7"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 text-center">
+        <p class="text-xs text-gray-600">Each chat message costs <span class="text-gray-500">5 credits</span>. Tool commands cost their respective tool's credit cost.</p>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}

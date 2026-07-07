@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Tools — NovaForge{% endblock %}
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold">All Tools</h1>
+        <p class="text-gray-500 mt-1">Select a tool to get started</p>
+    </div>
+
+    {% set cat_names = {'document': 'Document', 'image': 'Image & Vision', 'audio': 'Audio', 'video': 'Video', 'development': 'Development', 'forms': 'Forms & Templates'} %}
+    {% set cat_colors = {'document': 'purple', 'image': 'pink', 'audio': 'cyan', 'video': 'red', 'development': 'green', 'forms': 'amber'} %}
+
+    {% for category, tool_list in categories.items() %}
+    {% if tool_list %}
+    <div class="mb-10">
+        <h2 class="text-xl font-semibold mb-4 flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-{{ cat_colors[category] }}-400 inline-block"></span>
+            <span>{{ cat_names.get(category, category|capitalize) }} Tools</span>
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {% for tool in tool_list %}
+            <a href="/tools/{{ tool.slug }}" class="group bg-gray-900/50 border border-gray-800 rounded-xl p-5 hover:border-{{ cat_colors[category] }}-500/50 hover:bg-gray-900 transition-all">
+                <h3 class="font-medium mb-1">{{ tool.name }}</h3>
+                <p class="text-xs text-gray-500 mb-3">{{ tool.description }}</p>
+                <span class="text-xs text-gray-600">{{ tool.credit_cost }} credits</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+
+{% endblock %}

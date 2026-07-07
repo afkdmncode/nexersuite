@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Credits — NovaForge{% endblock %}
+{% block content %}
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold">Your Credits</h1>
+        <p class="text-sm text-gray-500">Free credits are tracked by your IP address across all devices.</p>
+    </div>
+
+    <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6 mb-8">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <p class="text-sm text-gray-500">Free Credits Remaining</p>
+                <p class="text-4xl font-bold">{{ remaining }} <span class="text-lg text-gray-500 font-normal">/ {{ total }}</span></p>
+            </div>
+            <div class="w-20 h-20 relative">
+                <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                    <circle cx="18" cy="18" r="15.5" fill="none" stroke="currentColor" stroke-width="3" class="text-gray-800"/>
+                    <circle cx="18" cy="18" r="15.5" fill="none" stroke="currentColor" stroke-width="3"
+                        stroke-dasharray="{{ (remaining / total * 100) }}, 100"
+                        class="text-purple-500"/>
+                </svg>
+            </div>
+        </div>
+
+        {% if remaining < 20 %}
+        <div class="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 text-sm text-yellow-400">
+            You're running low on credits! Purchase a plan to get more.
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6 mb-8">
+        <h2 class="font-semibold mb-4">Tool Credit Costs</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {% for tool in tools %}
+            <div class="flex items-center justify-between bg-gray-800/30 rounded-lg px-3 py-2">
+                <span class="text-sm">{{ tool.name }}</span>
+                <span class="text-xs text-purple-400">{{ tool.credit_cost }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+        <h2 class="font-semibold mb-4">How Credits Work</h2>
+        <ul class="space-y-2 text-sm text-gray-400">
+            <li class="flex items-start space-x-2">
+                <span class="text-purple-400">1.</span>
+                <span>Every new IP gets <strong class="text-gray-200">{{ total }} free credits</strong>.</span>
+            </li>
+            <li class="flex items-start space-x-2">
+                <span class="text-purple-400">2.</span>
+                <span>Each tool costs a set number of credits (see above). Using the same tool repeatedly depletes your pool faster.</span>
+            </li>
+            <li class="flex items-start space-x-2">
+                <span class="text-purple-400">3.</span>
+                <span>IP-based tracking means the same pool is used across all devices on your network.</span>
+            </li>
+            <li class="flex items-start space-x-2">
+                <span class="text-purple-400">4.</span>
+                <span>Paid users bypass IP restrictions entirely and get their own credit pool.</span>
+            </li>
+        </ul>
+    </div>
+</div>
+
+{% endblock %}

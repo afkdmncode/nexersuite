@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}About — NovaForge{% endblock %}
+{% block content %}
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold mb-4">About NovaForge</h1>
+        <p class="text-gray-500 text-lg">AI-powered tools for everyone</p>
+    </div>
+
+    <div class="prose prose-invert max-w-none">
+        <p class="text-gray-400 leading-relaxed">
+            NovaForge is a unified AI platform that brings together document processing, media transcription,
+            image generation, computer vision, development tools, and more — all accessible through a single
+            chat interface or individual tool pages.
+        </p>
+
+        <h2 class="text-xl font-semibold mt-8 mb-4">Our Mission</h2>
+        <p class="text-gray-400 leading-relaxed">
+            To make advanced AI tools accessible to everyone. We believe that powerful AI should not require
+            complex setups, expensive subscriptions, or technical expertise.
+        </p>
+
+        <h2 class="text-xl font-semibold mt-8 mb-4">What Makes Us Different</h2>
+        <ul class="space-y-3 text-gray-400">
+            <li><strong class="text-gray-200">Unified Interface</strong> — Chat, tools, and APIs in one place</li>
+            <li><strong class="text-gray-200">Fair Free Tier</strong> — Everyone gets free credits, tracked by IP across devices</li>
+            <li><strong class="text-gray-200">Extensible</strong> — New tools added regularly, from YOLO detection to SAM segmentation</li>
+            <li><strong class="text-gray-200">Developer Friendly</strong> — REST API with simple authentication</li>
+        </ul>
+
+        <h2 class="text-xl font-semibold mt-8 mb-4">Technology</h2>
+        <p class="text-gray-400 leading-relaxed">
+            Built with Flask, SQLite, Google Gemini AI, PyMuPDF, pytesseract, and modern web technologies.
+            Designed to run on any platform including Android via Termux.
+        </p>
+    </div>
+</div>
+
+{% endblock %}
