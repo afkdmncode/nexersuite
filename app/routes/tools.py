@@ -149,6 +149,63 @@ def tts():
     return render_template('tools/tts.html')
 
 
+@tools_bp.route('/transcribe')
+def transcribe_page():
+    return render_template('tools/transcribe.html')
+
+@tools_bp.route('/convert')
+def convert_page():
+    return render_template('tools/convert.html')
+
+@tools_bp.route('/translate')
+def translate_page():
+    return render_template('tools/translate.html')
+
+@tools_bp.route('/sign')
+def sign_page():
+    return render_template('tools/sign.html')
+
+@tools_bp.route('/detect')
+def detect_page():
+    return render_template('tools/detect.html')
+
+@tools_bp.route('/segment')
+def segment_page():
+    return render_template('tools/segment.html')
+
+@tools_bp.route('/pose')
+def pose_page():
+    return render_template('tools/pose.html')
+
+@tools_bp.route('/code_gen')
+def codegen_page():
+    return render_template('tools/code_gen.html')
+
+@tools_bp.route('/code_exec')
+def codeexec_page():
+    return render_template('tools/code_exec.html')
+
+@tools_bp.route('/form_build')
+def formbuild_page():
+    return render_template('tools/form_build.html')
+
+@tools_bp.route('/resume_build')
+def resumebuild_page():
+    return render_template('tools/resume_build.html')
+
+@tools_bp.route('/video_transcribe')
+def video_transcribe_page():
+    return render_template('tools/video_transcribe.html')
+
+@tools_bp.route('/video_analyze')
+def video_analyze_page():
+    return render_template('tools/video_analyze.html')
+
+@tools_bp.route('/audio_translate')
+def audio_translate_page():
+    return render_template('tools/audio_translate.html')
+
+
 @tools_bp.route('/<tool_name>')
 def tool_stub(tool_name):
     tool = ToolCost.query.filter_by(slug=tool_name).first()
