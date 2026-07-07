@@ -7,7 +7,10 @@
             <h1 class="text-2xl font-bold">Dashboard</h1>
             <p class="text-sm text-gray-500">System overview and key metrics</p>
         </div>
-        <div class="text-xs text-gray-600">Live</div>
+        <div class="flex items-center space-x-3">
+            <span class="text-xs text-gray-600">Price multiplier: <strong class="text-purple-400">{{ price_multiplier }}x</strong></span>
+            <span class="text-xs text-gray-600">Live</span>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -16,32 +19,32 @@
             <p class="text-2xl font-bold">{{ total_ips }}</p>
         </div>
         <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-4 stat-card">
-            <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Active IPs (24h)</p>
-            <p class="text-2xl font-bold">{{ active_ips_24h }}</p>
+            <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Visitors (24h)</p>
+            <p class="text-2xl font-bold">{{ active_visitors_24h }}</p>
         </div>
         <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-4 stat-card">
-            <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Total Requests</p>
+            <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Tool Requests</p>
             <p class="text-2xl font-bold">{{ total_requests }}</p>
+        </div>
+        <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-4 stat-card">
+            <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">User Interactions</p>
+            <p class="text-2xl font-bold">{{ interaction_count }}</p>
         </div>
         <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-4 stat-card">
             <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Registered Users</p>
             <p class="text-2xl font-bold">{{ user_count }}</p>
         </div>
         <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-4 stat-card">
-            <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Credits Used (total)</p>
+            <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">API Keys</p>
+            <p class="text-2xl font-bold">{{ api_key_count }}</p>
+        </div>
+        <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-4 stat-card">
+            <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Ollama Instances</p>
+            <p class="text-2xl font-bold">{{ ollama_count }}</p>
+        </div>
+        <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-4 stat-card">
+            <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Credits Used</p>
             <p class="text-2xl font-bold">{{ total_credits_used }}</p>
-        </div>
-        <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-4 stat-card">
-            <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Credits Remaining (pool)</p>
-            <p class="text-2xl font-bold">{{ total_credits_remaining }}</p>
-        </div>
-        <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-4 stat-card">
-            <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Total Credits Spent</p>
-            <p class="text-2xl font-bold">{{ total_usage }}</p>
-        </div>
-        <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-4 stat-card">
-            <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Log Storage</p>
-            <p class="text-2xl font-bold">{{ log_stats.values()|sum(attribute='size_mb')|round(1) }} MB</p>
         </div>
     </div>
 
@@ -85,7 +88,7 @@
     </div>
 
     <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-5">
-        <h2 class="font-semibold mb-4">Recent Usage</h2>
+        <h2 class="font-semibold mb-4">Recent Tool Usage</h2>
         {% if recent_logs %}
         <div class="overflow-x-auto">
             <table class="w-full text-sm">

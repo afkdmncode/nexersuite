@@ -4,7 +4,7 @@
 <div class="p-6">
     <div class="mb-6">
         <h1 class="text-2xl font-bold">Tool Management</h1>
-        <p class="text-sm text-gray-500">Configure credit costs and availability for all tools</p>
+        <p class="text-sm text-gray-500">Configure credit costs, multipliers, and availability for all tools</p>
     </div>
 
     <div class="bg-gray-900/50 border border-gray-800 rounded-2xl overflow-hidden">
@@ -13,7 +13,8 @@
                 <tr class="bg-gray-800/50 text-left text-gray-500 text-xs uppercase tracking-wider">
                     <th class="px-5 py-3">Tool</th>
                     <th class="px-5 py-3">Category</th>
-                    <th class="px-5 py-3">Credit Cost</th>
+                    <th class="px-5 py-3">Base Cost</th>
+                    <th class="px-5 py-3">Multiplier</th>
                     <th class="px-5 py-3">Active</th>
                     <th class="px-5 py-3">Paid Only</th>
                     <th class="px-5 py-3">Actions</th>
@@ -31,6 +32,11 @@
                         <input type="number" value="{{ tool.credit_cost }}" min="0" max="1000"
                             class="w-20 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-purple-500/50"
                             id="cost-{{ tool.id }}">
+                    </td>
+                    <td class="px-5 py-3">
+                        <input type="number" value="{{ tool.price_multiplier }}" step="0.1" min="0.1" max="10"
+                            class="w-20 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-purple-500/50"
+                            id="mult-{{ tool.id }}">
                     </td>
                     <td class="px-5 py-3">
                         <label class="relative inline-flex items-center cursor-pointer">
@@ -62,12 +68,14 @@
 <script>
 async function updateTool(id) {
     const cost = document.getElementById(`cost-${id}`).value;
+    const mult = document.getElementById(`mult-${id}`).value;
     const active = document.getElementById(`active-${id}`).checked ? '1' : '0';
     const paid = document.getElementById(`paid-${id}`).checked ? '1' : '0';
 
     const formData = new FormData();
     formData.append('tool_id', id);
     formData.append('credit_cost', cost);
+    formData.append('price_multiplier', mult);
     formData.append('is_active', active);
     formData.append('is_paid_only', paid);
 

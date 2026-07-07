@@ -60,6 +60,11 @@ tool_log.setLevel(logging.DEBUG)
 tool_log.addHandler(_make_handler('tools.log'))
 tool_log.propagate = False
 
+user_log = logging.getLogger('novaforge.user')
+user_log.setLevel(logging.DEBUG)
+user_log.addHandler(_make_handler('users.log'))
+user_log.propagate = False
+
 error_log = logging.getLogger('novaforge.error')
 error_log.setLevel(logging.ERROR)
 error_log.addHandler(_make_handler('errors.log'))
@@ -76,7 +81,7 @@ def log_with_fields(logger, level, message, **fields):
 
 
 def log_request(method, path, status, duration_ms, ip, user_agent, **extra):
-    log_with_fields(request_log, 'info', f'{method} {path} {status}', 
+    log_with_fields(request_log, 'info', f'{method} {path} {status}',
                     method=method, path=path, status=status,
                     duration_ms=duration_ms, ip=ip, user_agent=user_agent,
                     **extra)
@@ -102,6 +107,13 @@ def log_tool_usage(tool_slug, ip, status, duration_ms, credits_cost=0, **extra):
                     **extra)
 
 
+def log_user_action(ip, action_type, page=None, detail=None, user_id=None, session_id=None, duration_ms=0):
+    log_with_fields(user_log, 'info', f'{action_type} {page or ""}',
+                    ip=ip, action=action_type, page=page,
+                    detail=detail, user_id=str(user_id) if user_id else 'anonymous',
+                    session_id=session_id or '', duration_ms=duration_ms)
+
+
 def log_error(message, **fields):
     log_with_fields(error_log, 'error', message, **fields)
     app_log.error(message, extra={'extra_fields': fields})
@@ -114,6 +126,7 @@ def get_recent_logs(log_type='app', lines=100):
         'credits': 'credits.log',
         'admin': 'admin.log',
         'tools': 'tools.log',
+        'users': 'users.log',
         'errors': 'errors.log',
     }
     path = os.path.join(LOG_DIR, files.get(log_type, 'app.log'))
@@ -129,7 +142,7 @@ def get_recent_logs(log_type='app', lines=100):
 
 def get_log_stats():
     stats = {}
-    for name in ('app', 'requests', 'credits', 'admin', 'tools', 'errors'):
+    for name in ('app', 'requests', 'credits', 'admin', 'tools', 'users', 'errors'):
         path = os.path.join(LOG_DIR, f'{name}.log')
         if os.path.exists(path):
             size = os.path.getsize(path)

@@ -1,3 +1,4 @@
+import secrets
 from datetime import datetime
 from app import db, login_manager
 from flask_login import UserMixin
@@ -32,6 +33,7 @@ class ToolCost(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     is_paid_only = db.Column(db.Boolean, default=False)
     description = db.Column(db.Text, default='')
+    price_multiplier = db.Column(db.Float, default=1.0)
 
 
 class UsageLog(db.Model):
@@ -45,6 +47,90 @@ class UsageLog(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class UserInteraction(db.Model):
+    __tablename__ = 'user_interaction'
+
+    id = db.Column(db.Integer, primary_key=True)
+    ip_address = db.Column(db.String(45), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    session_id = db.Column(db.String(64), nullable=True)
+    action_type = db.Column(db.String(50), nullable=False)
+    page = db.Column(db.String(255), nullable=True)
+    detail = db.Column(db.Text, nullable=True)
+    duration_ms = db.Column(db.Integer, default=0)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class ApiKey(db.Model):
+    __tablename__ = 'api_key'
+
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(64), unique=True, nullable=False, index=True)
+    name = db.Column(db.String(100), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    is_active = db.Column(db.Boolean, default=True)
+    rate_limit = db.Column(db.Integer, default=60)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_used_at = db.Column(db.DateTime, nullable=True)
+    total_requests = db.Column(db.Integer, default=0)
+
+    @staticmethod
+    def generate_key():
+        return 'nf_' + secrets.token_hex(32)
+
+
+class OllamaInstance(db.Model):
+    __tablename__ = 'ollama_instance'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    url = db.Column(db.String(255), nullable=False)
+    api_key = db.Column(db.String(255), nullable=True)
+    is_active = db.Column(db.Boolean, default=True)
+    priority = db.Column(db.Integer, default=0)
+    fail_count = db.Column(db.Integer, default=0)
+    last_check = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    models = db.relationship('OllamaModel', backref='instance', lazy='dynamic', cascade='all, delete-orphan')
+
+
+class OllamaModel(db.Model):
+    __tablename__ = 'ollama_model'
+
+    id = db.Column(db.Integer, primary_key=True)
+    instance_id = db.Column(db.Integer, db.ForeignKey('ollama_instance.id'), nullable=False)
+    model_name = db.Column(db.String(100), nullable=False)
+    is_free = db.Column(db.Boolean, default=True)
+    credit_cost = db.Column(db.Integer, default=0)
+    is_active = db.Column(db.Boolean, default=True)
+    requires_paid_account = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class AppConfig(db.Model):
+    __tablename__ = 'app_config'
+
+    key = db.Column(db.String(100), primary_key=True)
+    value = db.Column(db.Text, nullable=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    @classmethod
+    def get(cls, key, default=None):
+        obj = cls.query.get(key)
+        return obj.value if obj else default
+
+    @classmethod
+    def set(cls, key, value):
+        obj = cls.query.get(key)
+        if obj:
+            obj.value = value
+        else:
+            obj = cls(key=key, value=value)
+            db.session.add(obj)
+        db.session.commit()
+
+
 class User(UserMixin, db.Model):
     __tablename__ = 'user'
 
@@ -55,6 +141,7 @@ class User(UserMixin, db.Model):
     subscription_tier = db.Column(db.String(20), default='free')
     api_key = db.Column(db.String(64), unique=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    credit_bonus = db.Column(db.Integer, default=0)
 
 
 class Payment(db.Model):
@@ -103,6 +190,15 @@ def seed_tool_costs():
             credit_cost=cost, is_paid_only=paid_only, description=desc
         ))
     db.session.commit()
+
+    if ApiKey.query.first() is None:
+        key = ApiKey(
+            key=ApiKey.generate_key(),
+            name='Default Admin Key',
+            is_active=True,
+        )
+        db.session.add(key)
+        db.session.commit()
 
 
 @login_manager.user_loader

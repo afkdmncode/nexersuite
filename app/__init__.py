@@ -1,6 +1,7 @@
 import os
 import time
-from flask import Flask, request, g
+import secrets
+from flask import Flask, request, g, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from app.config import Config
@@ -20,29 +21,47 @@ def create_app(config_class=Config):
     login_manager.init_app(app)
     login_manager.login_view = 'landing.index'
 
-    from app.services.logger import log_request, log_error, app_log
+    from app.services.logger import log_request, log_error, log_user_action, app_log
 
     @app.before_request
     def before_request_logging():
         g.start_time = time.time()
         g.ip = request.headers.get('X-Forwarded-For', request.remote_addr or 'unknown')
-        app_log.debug(f'Request: {request.method} {request.path}', extra={
-            'extra_fields': {
-                'ip': g.ip, 'method': request.method,
-                'path': request.path, 'user_agent': request.headers.get('User-Agent', '')
-            }
-        })
+        if 'session_id' not in session:
+            session['session_id'] = secrets.token_hex(16)
+        g.session_id = session['session_id']
+
+        if not request.path.startswith('/static'):
+            app_log.debug(f'Request: {request.method} {request.path}', extra={
+                'extra_fields': {
+                    'ip': g.ip, 'method': request.method,
+                    'path': request.path, 'user_agent': request.headers.get('User-Agent', '')
+                }
+            })
 
     @app.after_request
     def after_request_logging(response):
         duration = int((time.time() - g.get('start_time', time.time())) * 1000)
-        log_request(
-            method=request.method, path=request.path,
-            status=response.status_code, duration_ms=duration,
-            ip=g.get('ip', 'unknown'),
-            user_agent=request.headers.get('User-Agent', '')[:120],
-            content_length=response.content_length or 0,
-        )
+
+        if not request.path.startswith('/static'):
+            log_request(
+                method=request.method, path=request.path,
+                status=response.status_code, duration_ms=duration,
+                ip=g.get('ip', 'unknown'),
+                user_agent=request.headers.get('User-Agent', '')[:120],
+                content_length=response.content_length or 0,
+            )
+
+            if response.status_code < 400:
+                log_user_action(
+                    ip=g.get('ip', 'unknown'),
+                    action_type='page_view',
+                    page=request.path,
+                    detail=f'{request.method} {response.status_code}',
+                    session_id=g.get('session_id', ''),
+                    duration_ms=duration,
+                )
+
         response.headers.add('X-Response-Time', f'{duration}ms')
         return response
 

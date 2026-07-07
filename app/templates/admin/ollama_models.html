@@ -1,0 +1,137 @@
+{% extends "admin/base.html" %}
+{% block title %}Models — {{ instance.name }}{% endblock %}
+{% block content %}
+<div class="p-6">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-bold">Models: {{ instance.name }}</h1>
+            <p class="text-sm text-gray-500">{{ instance.url }} — Set pricing and availability per model</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button onclick="syncModels({{ instance.id }})" class="bg-gray-700 text-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition">
+                Sync Models
+            </button>
+            <a href="/admin/ollama" class="text-xs text-gray-500 hover:text-gray-300 transition">&larr; Back</a>
+        </div>
+    </div>
+
+    <div class="bg-gray-900/50 border border-gray-800 rounded-2xl overflow-hidden">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="bg-gray-800/50 text-left text-gray-500 text-xs uppercase tracking-wider">
+                    <th class="px-5 py-3">Model Name</th>
+                    <th class="px-5 py-3">Active</th>
+                    <th class="px-5 py-3">Free</th>
+                    <th class="px-5 py-3">Credit Cost</th>
+                    <th class="px-5 py-3">Paid Account Only</th>
+                    <th class="px-5 py-3">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mdl in models %}
+                <tr class="border-t border-gray-800/50 hover:bg-gray-800/20" id="model-{{ mdl.id }}">
+                    <td class="px-5 py-3 font-mono text-sm">{{ mdl.model_name }}</td>
+                    <td class="px-5 py-3">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer" id="m-active-{{ mdl.id }}"
+                                {% if mdl.is_active %}checked{% endif %}>
+                            <div class="w-9 h-5 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                        </label>
+                    </td>
+                    <td class="px-5 py-3">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer" id="m-free-{{ mdl.id }}"
+                                {% if mdl.is_free %}checked{% endif %}>
+                            <div class="w-9 h-5 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                        </label>
+                    </td>
+                    <td class="px-5 py-3">
+                        <input type="number" value="{{ mdl.credit_cost }}" min="0" max="1000"
+                            class="w-20 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-purple-500/50"
+                            id="m-cost-{{ mdl.id }}"
+                            {% if mdl.is_free %}disabled{% endif %}>
+                    </td>
+                    <td class="px-5 py-3">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer" id="m-paid-{{ mdl.id }}"
+                                {% if mdl.requires_paid_account %}checked{% endif %}>
+                            <div class="w-9 h-5 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-600"></div>
+                        </label>
+                    </td>
+                    <td class="px-5 py-3">
+                        <button onclick="updateModel({{ mdl.id }})"
+                            class="text-xs bg-purple-600/20 text-purple-400 px-3 py-1.5 rounded-lg hover:bg-purple-600/30 transition">
+                            Save
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="px-5 py-8 text-center text-sm text-gray-500">
+                        No models synced yet. Click "Sync Models" to pull the model list from this instance.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-6 bg-gray-900/50 border border-gray-800 rounded-2xl p-5">
+        <h3 class="font-semibold text-sm mb-3">How Model Pricing Works</h3>
+        <ul class="space-y-1 text-xs text-gray-500">
+            <li>• <strong class="text-gray-400">Free</strong> — Model costs 0 credits, available to all users</li>
+            <li>• <strong class="text-gray-400">Credit Cost</strong> — Model costs this many credits per request (only applies when Free is OFF)</li>
+            <li>• <strong class="text-gray-400">Paid Account Only</strong> — Only registered paid users can access this model</li>
+            <li>• <strong class="text-gray-400">Inactive</strong> — Model is hidden from users but kept in the database</li>
+            <li>• <strong class="text-gray-400">Global price multiplier</strong> from Pricing page applies on top of per-model credit costs</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+async function syncModels(instanceId) {
+    const fd = new FormData(); fd.append('instance_id', instanceId);
+    const res = await fetch('/admin/ollama/models/sync', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.success) {
+        location.reload();
+    }
+}
+
+async function updateModel(id) {
+    const active = document.getElementById(`m-active-${id}`).checked ? '1' : '0';
+    const free = document.getElementById(`m-free-${id}`).checked ? '1' : '0';
+    const cost = document.getElementById(`m-cost-${id}`).value;
+    const paid = document.getElementById(`m-paid-${id}`).checked ? '1' : '0';
+
+    const fd = new FormData();
+    fd.append('model_id', id);
+    fd.append('is_active', active);
+    fd.append('is_free', free);
+    fd.append('credit_cost', free === '1' ? '0' : cost);
+    fd.append('requires_paid', paid);
+
+    const res = await fetch('/admin/ollama/models/update', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.success) {
+        const btn = document.querySelector(`#model-${id} button`);
+        btn.textContent = 'Saved!';
+        btn.classList.remove('bg-purple-600/20', 'text-purple-400');
+        btn.classList.add('bg-emerald-600/20', 'text-emerald-400');
+        setTimeout(() => {
+            btn.textContent = 'Save';
+            btn.classList.remove('bg-emerald-600/20', 'text-emerald-400');
+            btn.classList.add('bg-purple-600/20', 'text-purple-400');
+        }, 2000);
+    }
+}
+
+// Toggle cost field disabled when free is checked
+document.querySelectorAll('[id^=m-free-]').forEach(cb => {
+    cb.addEventListener('change', function() {
+        const id = this.id.replace('m-free-', '');
+        document.getElementById(`m-cost-${id}`).disabled = this.checked;
+    });
+});
+</script>
+{% endblock %}

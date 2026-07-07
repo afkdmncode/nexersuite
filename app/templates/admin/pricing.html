@@ -1,0 +1,119 @@
+{% extends "admin/base.html" %}
+{% block title %}Pricing{% endblock %}
+{% block content %}
+<div class="p-6">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold">Dynamic Pricing</h1>
+        <p class="text-sm text-gray-500">Control credit costs globally and per-tool. Price changes apply instantly.</p>
+    </div>
+
+    <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 mb-6">
+        <h2 class="font-semibold mb-4">Global Settings</h2>
+        <div class="flex items-end space-x-4">
+            <div>
+                <label class="text-xs text-gray-500 mb-1 block">Global Price Multiplier</label>
+                <input type="number" id="global-multiplier" value="{{ global_multiplier }}" step="0.1" min="0.1" max="10"
+                    class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500/50 w-40">
+                <p class="text-xs text-gray-600 mt-1">1.0 = base prices. 2.0 = double cost. 0.5 = half cost.</p>
+            </div>
+            <div>
+                <label class="text-xs text-gray-500 mb-1 block">Default Free Pool Size</label>
+                <input type="number" id="pool-size" value="{{ pool_size }}" min="0" max="10000"
+                    class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500/50 w-40">
+            </div>
+            <button onclick="updateGlobal()" class="bg-gradient-to-r from-purple-600 to-cyan-500 px-5 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition">Save Global</button>
+        </div>
+    </div>
+
+    <div class="bg-gray-900/50 border border-gray-800 rounded-2xl overflow-hidden">
+        <div class="px-5 py-3 border-b border-gray-800 bg-gray-800/30">
+            <h2 class="font-semibold text-sm">Per-Tool Pricing</h2>
+        </div>
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-left text-gray-500 text-xs uppercase tracking-wider">
+                    <th class="px-5 py-3">Tool</th>
+                    <th class="px-5 py-3">Category</th>
+                    <th class="px-5 py-3">Base Cost</th>
+                    <th class="px-5 py-3">Multiplier</th>
+                    <th class="px-5 py-3">Effective Cost</th>
+                    <th class="px-5 py-3">Active</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tool in tools %}
+                <tr class="border-t border-gray-800/50 hover:bg-gray-800/20">
+                    <td class="px-5 py-3 font-medium">{{ tool.name }}</td>
+                    <td class="px-5 py-3 text-xs text-gray-500">{{ tool.category }}</td>
+                    <td class="px-5 py-3">
+                        <input type="number" value="{{ tool.credit_cost }}" min="0" max="1000"
+                            class="w-20 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-purple-500/50"
+                            id="base-{{ tool.id }}">
+                    </td>
+                    <td class="px-5 py-3">
+                        <input type="number" value="{{ tool.price_multiplier }}" step="0.1" min="0.1" max="10"
+                            class="w-20 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-purple-500/50"
+                            id="mult-{{ tool.id }}">
+                    </td>
+                    <td class="px-5 py-3">
+                        <span class="text-purple-400 font-medium" id="eff-{{ tool.id }}">
+                            {{ (tool.credit_cost * global_multiplier * tool.price_multiplier)|round|int }}
+                        </span>
+                        <span class="text-xs text-gray-600">credits</span>
+                    </td>
+                    <td class="px-5 py-3">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer" id="active-{{ tool.id }}"
+                                {% if tool.is_active %}checked{% endif %}>
+                            <div class="w-9 h-5 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                        </label>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-4 text-right">
+        <button onclick="saveAllTools()" class="bg-gradient-to-r from-purple-600 to-cyan-500 px-6 py-2.5 rounded-lg text-sm font-medium hover:opacity-90 transition">
+            Save All Tool Prices
+        </button>
+    </div>
+</div>
+
+<script>
+async function updateGlobal() {
+    const fd = new FormData();
+    fd.append('multiplier', document.getElementById('global-multiplier').value);
+    fd.append('pool_size', document.getElementById('pool-size').value);
+    const res = await fetch('/admin/pricing/update-global', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.success) {
+        location.reload();
+    }
+}
+
+async function saveAllTools() {
+    const tools = {{ tools|length }};
+    let success = 0;
+    for (let i = 0; i < {{ tools|length }}; i++) {
+        const id = {{ tools|map(attribute='id')|list|first }};
+    }
+    // Individual saves via loop
+    const promises = [];
+    {% for tool in tools %}
+    promises.push((async () => {
+        const fd = new FormData();
+        fd.append('tool_id', {{ tool.id }});
+        fd.append('credit_cost', document.getElementById('base-{{ tool.id }}').value);
+        fd.append('price_multiplier', document.getElementById('mult-{{ tool.id }}').value);
+        fd.append('is_active', document.getElementById('active-{{ tool.id }}').checked ? '1' : '0');
+        fd.append('is_paid_only', '0');
+        await fetch('/admin/tools/update', { method: 'POST', body: fd });
+    })());
+    {% endfor %}
+    await Promise.all(promises);
+    location.reload();
+}
+</script>
+{% endblock %}

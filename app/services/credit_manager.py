@@ -1,7 +1,7 @@
 from functools import wraps
 from flask import request, jsonify, session
 from app import db
-from app.models import IPPool, UsageLog, ToolCost, User
+from app.models import IPPool, UsageLog, ToolCost, User, AppConfig
 from app.config import Config
 from app.services.logger import log_credit, log_error
 
@@ -10,6 +10,14 @@ def get_client_ip():
     if request.headers.get('X-Forwarded-For'):
         return request.headers['X-Forwarded-For'].split(',')[0].strip()
     return request.remote_addr or '127.0.0.1'
+
+
+def get_global_price_multiplier():
+    try:
+        val = AppConfig.get('price_multiplier', '1.0')
+        return float(val)
+    except (ValueError, TypeError):
+        return 1.0
 
 
 def get_free_credits(ip_address=None):
@@ -27,8 +35,15 @@ def get_free_credits(ip_address=None):
 def get_tool_cost(tool_slug):
     tool = ToolCost.query.filter_by(slug=tool_slug).first()
     if tool is None:
-        return Config.TOOL_COSTS.get(tool_slug, 10)
-    return tool.credit_cost
+        base = Config.TOOL_COSTS.get(tool_slug, 10)
+    else:
+        base = tool.credit_cost
+
+    multiplier = get_global_price_multiplier()
+    if tool and tool.price_multiplier != 1.0:
+        multiplier *= tool.price_multiplier
+
+    return max(1, int(base * multiplier))
 
 
 def deduct_credits(tool_slug, ip_address=None, user=None):
@@ -51,7 +66,6 @@ def deduct_credits(tool_slug, ip_address=None, user=None):
         log_credit(ip_address, 'insufficient_credits', tool_slug, cost, pool.free_credits)
         return False
 
-    before = pool.free_credits
     pool.deduct(cost)
     log_entry = UsageLog(
         ip_address=ip_address,
