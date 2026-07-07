@@ -35,37 +35,37 @@ def _make_handler(filename, level=logging.DEBUG, max_bytes=10*1024*1024, backup_
     return handler
 
 
-app_log = logging.getLogger('novaforge')
+app_log = logging.getLogger('nexersuite')
 app_log.setLevel(logging.DEBUG)
 app_log.addHandler(_make_handler('app.log'))
 app_log.addHandler(_make_handler('errors.log', logging.ERROR))
 
-request_log = logging.getLogger('novaforge.request')
+request_log = logging.getLogger('nexersuite.request')
 request_log.setLevel(logging.DEBUG)
 request_log.addHandler(_make_handler('requests.log'))
 request_log.propagate = False
 
-credit_log = logging.getLogger('novaforge.credit')
+credit_log = logging.getLogger('nexersuite.credit')
 credit_log.setLevel(logging.DEBUG)
 credit_log.addHandler(_make_handler('credits.log'))
 credit_log.propagate = False
 
-admin_log = logging.getLogger('novaforge.admin')
+admin_log = logging.getLogger('nexersuite.admin')
 admin_log.setLevel(logging.DEBUG)
 admin_log.addHandler(_make_handler('admin.log'))
 admin_log.propagate = False
 
-tool_log = logging.getLogger('novaforge.tool')
+tool_log = logging.getLogger('nexersuite.tool')
 tool_log.setLevel(logging.DEBUG)
 tool_log.addHandler(_make_handler('tools.log'))
 tool_log.propagate = False
 
-user_log = logging.getLogger('novaforge.user')
+user_log = logging.getLogger('nexersuite.user')
 user_log.setLevel(logging.DEBUG)
 user_log.addHandler(_make_handler('users.log'))
 user_log.propagate = False
 
-error_log = logging.getLogger('novaforge.error')
+error_log = logging.getLogger('nexersuite.error')
 error_log.setLevel(logging.ERROR)
 error_log.addHandler(_make_handler('errors.log'))
 error_log.propagate = False

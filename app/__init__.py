@@ -94,6 +94,6 @@ def create_app(config_class=Config):
         db.create_all()
         models.seed_tool_costs()
 
-    app_log.info('NovaForge application started', extra={'extra_fields': {'config': 'loaded'}})
+    app_log.info('NexerSuite application started', extra={'extra_fields': {'config': 'loaded'}})
 
     return app

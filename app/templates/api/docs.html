@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}API Docs — NovaForge{% endblock %}
+{% block title %}API Docs — NexerSuite{% endblock %}
 {% block content %}
 
 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -13,7 +13,7 @@
             <h2 class="text-lg font-semibold mb-4">Authentication</h2>
             <p class="text-sm text-gray-400 mb-3">Include your API key in the <code class="bg-gray-800 px-2 py-0.5 rounded text-purple-400">X-API-Key</code> header or as a query parameter <code class="bg-gray-800 px-2 py-0.5 rounded text-purple-400">?api_key=</code>.</p>
             <div class="bg-gray-950 rounded-xl p-4 text-sm">
-                <pre class="text-gray-300">curl -X POST https://api.novaforge.ai/api/v1/chat \
+                <pre class="text-gray-300">curl -X POST https://api.nexersuite.ai/api/v1/chat \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-api-key" \
   -d '{"messages": [{"role": "user", "content": "Hello"}]}'</pre>
