@@ -11,13 +11,14 @@
     {% set cat_names = {'document': 'Document', 'image': 'Image & Vision', 'audio': 'Audio', 'video': 'Video', 'development': 'Development', 'forms': 'Forms & Templates'} %}
     {% set cat_colors = {'document': 'purple', 'image': 'pink', 'audio': 'cyan', 'video': 'red', 'development': 'green', 'forms': 'amber'} %}
     {% set tool_routes = {
-        'document-convert': '/tools/document/convert', 'document-translate': '/tools/document/translate',
-        'document-sign': '/tools/document/sign', 'transcribe': '/tools/audio/transcribe',
-        'video-transcribe': '/tools/video/transcribe', 'video-analyze': '/tools/video/analyze',
-        'detect': '/tools/image/detect', 'segment': '/tools/image/segment',
-        'pose': '/tools/image/pose', 'code-gen': '/tools/code/generate',
-        'code-exec': '/tools/code/execute', 'form-build': '/tools/forms/build',
-        'resume-build': '/tools/forms/resume',
+        'document-convert': '/tools/convert', 'document-translate': '/tools/translate',
+        'document-sign': '/tools/sign', 'transcribe': '/tools/transcribe',
+        'video-transcribe': '/tools/video_transcribe', 'video-analyze': '/tools/video_analyze',
+        'detect': '/tools/detect', 'segment': '/tools/segment',
+        'pose': '/tools/pose', 'code-gen': '/tools/code_gen',
+        'code-exec': '/tools/code_exec', 'form-build': '/tools/form_build',
+        'resume-build': '/tools/resume_build', 'image-edit': '/tools/image_edit',
+        'stt': '/tools/stt', 'code-review': '/tools/code_review',
     } %}
 
     {% for category, tool_list in categories.items() %}

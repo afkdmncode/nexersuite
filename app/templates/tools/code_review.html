@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Code Review — NexerSuite{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold">Code Review</h1>
+        <p class="text-sm text-gray-500">Get AI-powered code reviews. <span class="text-purple-400">8 credits</span></p>
+    </div>
+
+    <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+        <div>
+            <label class="block text-sm text-gray-400 mb-2">Code</label>
+            <textarea id="code-input" rows="8" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-purple-500/50 resize-none" placeholder="Paste your code here for review..."></textarea>
+        </div>
+
+        <div class="flex items-center space-x-3 mt-4">
+            <div class="flex-1">
+                <label class="block text-sm text-gray-400 mb-1">Language</label>
+                <select id="lang-select" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-purple-500">
+                    <option value="python">Python</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="typescript">TypeScript</option>
+                    <option value="java">Java</option>
+                    <option value="go">Go</option>
+                    <option value="rust">Rust</option>
+                    <option value="cpp">C++</option>
+                </select>
+            </div>
+            <button id="submit-btn" class="mt-5 bg-gradient-to-r from-purple-600 to-cyan-500 rounded-xl px-6 py-2.5 text-sm font-medium hover:opacity-90 transition disabled:opacity-50" disabled>Review</button>
+        </div>
+
+        <div id="result" class="mt-4 hidden">
+            <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-medium">Review</h3>
+                    <button id="copy-btn" class="text-xs text-purple-400 hover:text-purple-300 transition">Copy</button>
+                </div>
+                <pre id="output-text" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm text-gray-300 whitespace-pre-wrap max-h-96 overflow-y-auto"></pre>
+                <p id="credits-info" class="text-xs text-gray-500 mt-2"></p>
+            </div>
+        </div>
+
+        <div id="loading" class="mt-4 text-center hidden">
+            <div class="animate-spin w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+            <p class="text-sm text-gray-500">Reviewing code...</p>
+        </div>
+
+        <div id="error" class="mt-4 text-center text-red-400 text-sm hidden"></div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const codeInput = document.getElementById('code-input');
+    const submitBtn = document.getElementById('submit-btn');
+    const langSelect = document.getElementById('lang-select');
+    const result = document.getElementById('result');
+    const outputText = document.getElementById('output-text');
+    const loading = document.getElementById('loading');
+    const error = document.getElementById('error');
+    const copyBtn = document.getElementById('copy-btn');
+    const creditsInfo = document.getElementById('credits-info');
+
+    codeInput.addEventListener('input', () => {
+        submitBtn.disabled = !codeInput.value.trim();
+    });
+
+    submitBtn.addEventListener('click', async () => {
+        const code = codeInput.value.trim();
+        if (!code) return;
+
+        result.classList.add('hidden');
+        error.classList.add('hidden');
+        loading.classList.remove('hidden');
+        submitBtn.disabled = true;
+
+        try {
+            const res = await fetch('/tools/code/review', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code, language: langSelect.value })
+            });
+            const data = await res.json();
+            loading.classList.add('hidden');
+            submitBtn.disabled = false;
+
+            if (res.status === 402) {
+                error.textContent = data.message || 'Insufficient credits.';
+                error.classList.remove('hidden');
+                return;
+            }
+            if (data.error) {
+                error.textContent = data.error;
+                error.classList.remove('hidden');
+                return;
+            }
+            outputText.textContent = data.review || data.text || '(No review)';
+            creditsInfo.textContent = `Credits remaining: ${data.credits_remaining}`;
+            result.classList.remove('hidden');
+            updateCredits(data.credits_remaining);
+        } catch (e) {
+            loading.classList.add('hidden');
+            submitBtn.disabled = false;
+            error.textContent = 'Error reviewing code.';
+            error.classList.remove('hidden');
+        }
+    });
+
+    copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(outputText.textContent).then(() => {
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+        });
+    });
+});
+</script>
+{% endblock %}

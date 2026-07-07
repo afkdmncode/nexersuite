@@ -175,6 +175,45 @@ def analyze_image(image_bytes, prompt):
     return response.text
 
 
+# ── Code Review ──
+
+def review_code(code, language='python'):
+    def _gemini_review():
+        client = get_gemini_client()
+        resp = client.models.generate_content(
+            model=get_gemini_model(),
+            contents=[f"Review the following {language} code. Identify bugs, suggest improvements, and assess code quality. Be thorough but concise:\n\n{code}"]
+        )
+        return resp.text.strip()
+
+    def _ollama_review():
+        return ollama_chat(
+            [{'role': 'user', 'content': f"Review the following {language} code. Identify bugs, suggest improvements, and assess code quality:\n\n{code}"}],
+            model=get_ollama_model()
+        )
+
+    provider = get_active_provider()
+    if provider == 'ollama':
+        return _call_with_failover('ollama', 'chat', _ollama_review, _gemini_review)
+    else:
+        return _call_with_failover('gemini', 'chat', _gemini_review, _ollama_review)
+
+
+# ── Image Editing (Gemini vision only) ──
+
+def edit_image(image_bytes, instruction):
+    client = get_gemini_client()
+    if not client:
+        raise RuntimeError('Gemini API key not configured. Image editing requires Gemini.')
+    import PIL.Image
+    img = PIL.Image.open(io.BytesIO(image_bytes))
+    response = client.models.generate_content(
+        model=get_gemini_model(),
+        contents=[f"Edit this image according to the instruction: {instruction}. Describe what was changed and how the image now looks.", img]
+    )
+    return response.text
+
+
 # ── Translation (both providers, with failover) ──
 
 def translate_text(text, target_language):

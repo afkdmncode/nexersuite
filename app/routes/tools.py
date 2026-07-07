@@ -6,8 +6,8 @@ from datetime import datetime
 from flask import Blueprint, render_template, request, jsonify, current_app, g, send_file
 from werkzeug.utils import secure_filename
 from app.services.document import extract_text_from_pdf, convert_document, add_signature_to_pdf, create_signature_page
-from app.services.ai import generate_image, analyze_image, translate_text, summarize_text, chat_completion
-from app.services.media import text_to_speech, transcribe_audio, translate_audio, transcribe_video
+from app.services.ai import generate_image, analyze_image, translate_text, summarize_text, chat_completion, review_code, edit_image
+from app.services.media import text_to_speech, transcribe_audio, translate_audio, transcribe_video, speech_to_text
 from app.services.credit_manager import require_credits, get_free_credits, get_client_ip, deduct_credits
 from app.services.logger import log_tool_usage, log_error
 from app.models import ToolCost
@@ -205,6 +205,18 @@ def video_analyze_page():
 def audio_translate_page():
     return render_template('tools/audio_translate.html')
 
+@tools_bp.route('/image_edit')
+def image_edit_page():
+    return render_template('tools/image_edit.html')
+
+@tools_bp.route('/stt')
+def stt_page():
+    return render_template('tools/stt.html')
+
+@tools_bp.route('/code_review')
+def code_review_page():
+    return render_template('tools/code_review.html')
+
 
 @tools_bp.route('/<tool_name>')
 def tool_stub(tool_name):
@@ -376,6 +388,36 @@ def audio_translate():
     return render_template('tools/audio_translate.html')
 
 
+@tools_bp.route('/audio/stt', methods=['GET', 'POST'])
+def audio_stt():
+    if request.method == 'POST':
+        start = time.time()
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+
+        ip = get_client_ip()
+        if not deduct_credits('stt'):
+            return jsonify({'error': 'insufficient_credits', 'message': 'Need 8 credits'}), 402
+
+        file_bytes = file.read()
+        try:
+            text = speech_to_text(file_bytes)
+            duration = int((time.time() - start) * 1000)
+            log_tool_usage('stt', ip, 'success', duration, 8, filename=file.filename)
+            credits = get_free_credits()
+            return jsonify({'text': text, 'credits_remaining': credits})
+        except Exception as e:
+            duration = int((time.time() - start) * 1000)
+            log_error(f'STT failed: {str(e)}', ip=ip, filename=file.filename)
+            log_tool_usage('stt', ip, 'error', duration, 8)
+            return jsonify({'error': str(e)}), 500
+
+    return render_template('tools/stt.html')
+
+
 @tools_bp.route('/video/transcribe', methods=['GET', 'POST'])
 def video_transcribe():
     if request.method == 'POST':
@@ -528,6 +570,37 @@ def image_pose():
     return render_template('tools/pose.html')
 
 
+@tools_bp.route('/image/edit', methods=['GET', 'POST'])
+def image_edit():
+    if request.method == 'POST':
+        start = time.time()
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+
+        ip = get_client_ip()
+        if not deduct_credits('image-edit'):
+            return jsonify({'error': 'insufficient_credits', 'message': 'Need 15 credits'}), 402
+
+        instruction = request.form.get('instruction', 'Enhance this image')
+        file_bytes = file.read()
+        try:
+            result = edit_image(file_bytes, instruction)
+            duration = int((time.time() - start) * 1000)
+            log_tool_usage('image-edit', ip, 'success', duration, 15, filename=file.filename)
+            credits = get_free_credits()
+            return jsonify({'result': result, 'credits_remaining': credits})
+        except Exception as e:
+            duration = int((time.time() - start) * 1000)
+            log_error(f'Image edit failed: {str(e)}', ip=ip, filename=file.filename)
+            log_tool_usage('image-edit', ip, 'error', duration, 15)
+            return jsonify({'error': str(e)}), 500
+
+    return render_template('tools/image_edit.html')
+
+
 @tools_bp.route('/code/generate', methods=['GET', 'POST'])
 def code_generate():
     if request.method == 'POST':
@@ -596,6 +669,36 @@ def code_execute():
             return jsonify({'error': str(e)}), 500
 
     return render_template('tools/code_exec.html')
+
+
+@tools_bp.route('/code/review', methods=['GET', 'POST'])
+def code_review():
+    if request.method == 'POST':
+        start = time.time()
+        data = request.get_json()
+        code = data.get('code', '')
+        language = data.get('language', 'python')
+        ip = get_client_ip()
+
+        if not code:
+            return jsonify({'error': 'No code provided'}), 400
+
+        if not deduct_credits('code-review'):
+            return jsonify({'error': 'insufficient_credits', 'message': 'Need 8 credits'}), 402
+
+        try:
+            result = review_code(code, language)
+            duration = int((time.time() - start) * 1000)
+            log_tool_usage('code-review', ip, 'success', duration, 8, lang=language)
+            credits = get_free_credits()
+            return jsonify({'review': result, 'credits_remaining': credits})
+        except Exception as e:
+            duration = int((time.time() - start) * 1000)
+            log_error(f'Code review failed: {str(e)}', ip=ip)
+            log_tool_usage('code-review', ip, 'error', duration, 8)
+            return jsonify({'error': str(e)}), 500
+
+    return render_template('tools/code_review.html')
 
 
 @tools_bp.route('/forms/build', methods=['GET', 'POST'])
